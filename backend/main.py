@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import os
 import models
@@ -13,6 +14,15 @@ import reviews
 # Initialize Database tables
 models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI(title="BookLoop API")
+
+# Enable CORS so Streamlit Cloud can call this API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (you can restrict this later)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads")
 os.makedirs(os.path.join(UPLOAD_DIR, "books"), exist_ok=True)

@@ -4,5 +4,6 @@ sqlalchemy
 bcrypt
 python-jose[cryptography]
 python-multipart
-streamlit
-streamlit
+psycopg2-binary
+python-dotenv
+gunicorn
