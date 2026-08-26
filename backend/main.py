@@ -33,6 +33,11 @@ app.include_router(chat.router)
 app.include_router(reviews.router)
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 @app.post("/register", status_code=status.HTTP_201_CREATED)
 def register(username: str, email: str, password: str, school_class: str, db: Session = Depends(database.get_db)):
     # Check if user already exists

@@ -1,9 +1,8 @@
 import streamlit as st
 import requests
 import os
+from frontend.config import API_URL
 
-# Allow configuring the backend URL via environment variable `API_URL`.
-API_URL = os.getenv("BOOKLOOP_API_URL") or os.getenv("API_URL") or "http://127.0.0.1:8000"
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
