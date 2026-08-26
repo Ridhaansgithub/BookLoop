@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from frontend.config import API_URL
+from frontend.config import API_URL, GRADE_OPTIONS, grade_label
 
 st.header("🎒 School Books Marketplace")
 
@@ -14,7 +14,11 @@ except Exception:
 if not books:
     st.write("No active books found right now. Be the first to list one!")
 else:
-    class_filter = st.selectbox("Filter by Class/Year requirements:", ["All", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11"])
+    class_filter = st.selectbox(
+        "Filter by Class/Year requirements:",
+        ["All", *GRADE_OPTIONS],
+        format_func=lambda grade: "All Grades" if grade == "All" else grade_label(grade),
+    )
     
     cols = st.columns(3)
     idx = 0

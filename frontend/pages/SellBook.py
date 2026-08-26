@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from frontend.config import API_URL
+from frontend.config import API_URL, GRADE_OPTIONS, grade_label
 
 st.title("📚 Sell a Book")
 
@@ -12,7 +12,7 @@ with st.form("sell_book_form"):
 
     title = st.text_input("Book Title")
     author = st.text_input("Author")
-    target_class = st.text_input("Class / Course")
+    target_class = st.selectbox("Class / Course", GRADE_OPTIONS, format_func=grade_label)
     price = st.number_input("Price (£)", min_value=0.0)
 
     uploaded_file = st.file_uploader(
