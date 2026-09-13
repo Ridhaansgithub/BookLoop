@@ -1,9 +1,11 @@
 import streamlit as st
 import requests
 import os
+import re
 from frontend.config import API_URL
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
+EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
 def page_path(name: str) -> str:
@@ -110,41 +112,74 @@ def main() -> None:
             st.header("Create School Account")
             with st.form("register_form"):
                 reg_user = st.text_input("Choose Username", key="reg_user")
-                reg_email = st.text_input("School Email Address", key="reg_email")
+                is_under_18 = st.checkbox("I am under 18", key="reg_under_18")
+                email_label = "Parent's Gmail Address" if is_under_18 else "Your Email Address"
+                email_placeholder = "parent@gmail.com" if is_under_18 else "you@example.com"
+                reg_email = st.text_input(email_label, placeholder=email_placeholder, key="reg_email")
                 reg_pass = st.text_input("Password", type="password", key="reg_pass")
                 reg_class = st.selectbox("Your Current Class/Year group", ["Class 7", "Class 8", "Class 9", "Class 10", "Class 11"], key="reg_class")
-                submit_reg = st.form_submit_button("Register Now")
+                request_otp = st.form_submit_button("Send Verification Code")
 
-            if submit_reg:
+            if request_otp:
                 if not reg_user or not reg_email or not reg_pass:
                     st.error("All registration fields are required.")
+                elif not EMAIL_PATTERN.fullmatch(reg_email.strip()):
+                    st.error("Please enter a valid email address.")
+                elif is_under_18 and not reg_email.strip().lower().endswith("@gmail.com"):
+                    st.error("Parental consent requires a Gmail address.")
                 else:
                     try:
-                        # Pass fields explicitly as query string parameters matching backend rules
-                        params = {
-                            "username": reg_user,
-                            "email": reg_email,
-                            "password": reg_pass,
-                            "school_class": reg_class
-                        }
-                        res = requests.post(f"{API_URL}/register", params=params, timeout=5)
-
-                        # Check if the backend responded with a successful status code
-                        if res.status_code == 201:
-                            st.success("🎉 Registration successful! You can now log in using the 'Login' tab above.")
-                        elif res.status_code == 400:
-                            # Safely try parsing JSON only if it's a known error payload
-                            try:
-                                st.error(res.json().get("detail", "Registration failed."))
-                            except Exception:
-                                st.error(f"Registration failed with code 400: {res.text}")
+                        otp_res = requests.post(
+                            f"{API_URL}/register/request-otp",
+                            params={"email": reg_email.strip(), "is_under_18": is_under_18},
+                            timeout=10,
+                        )
+                        if otp_res.status_code == 200:
+                            st.session_state.registration_challenge_id = otp_res.json()["challenge_id"]
+                            st.success("Verification code sent. Check the email address above.")
                         else:
-                            st.error(f"Backend returned error code {res.status_code}. Check your Uvicorn console logs!")
+                            st.error(otp_res.json().get("detail", "Could not send verification code."))
+                    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                        st.error("Cannot reach the verification service. Is the backend running?")
+                    except Exception as e:
+                        st.error(f"Could not send verification code: {e}")
 
-                    except requests.exceptions.Timeout:
-                        st.error("Request timed out. Is the backend running and reachable?")
-                    except requests.exceptions.ConnectionError:
-                        st.error("Cannot connect to backend server. Is Uvicorn running?")
+            if st.session_state.get("registration_challenge_id"):
+                with st.form("verify_registration_form"):
+                    registration_otp = st.text_input("Verification Code", max_chars=6, placeholder="6-digit code")
+                    verify_otp = st.form_submit_button("Verify and Register")
+
+                if verify_otp:
+                    try:
+                        verify_res = requests.post(
+                            f"{API_URL}/register/verify-otp",
+                            params={
+                                "challenge_id": st.session_state.registration_challenge_id,
+                                "otp": registration_otp,
+                            },
+                            timeout=10,
+                        )
+                        if verify_res.status_code != 200:
+                            st.error(verify_res.json().get("detail", "Verification failed."))
+                        else:
+                            register_res = requests.post(
+                                f"{API_URL}/register",
+                                params={
+                                    "username": reg_user,
+                                    "email": reg_email.strip(),
+                                    "password": reg_pass,
+                                    "school_class": reg_class,
+                                    "verification_token": verify_res.json()["verification_token"],
+                                },
+                                timeout=10,
+                            )
+                            if register_res.status_code == 201:
+                                st.session_state.pop("registration_challenge_id", None)
+                                st.success("Registration successful! You can now log in using the Login tab.")
+                            else:
+                                st.error(register_res.json().get("detail", "Registration failed."))
+                    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                        st.error("Cannot reach the registration service. Is the backend running?")
                     except Exception as e:
                         st.error(f"Registration failed: {e}")
 
