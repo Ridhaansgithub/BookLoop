@@ -37,6 +37,11 @@ def main() -> None:
         }
 
         [data-testid='stHeader'] { background: transparent; }
+        [data-testid='stAppViewContainer'] p, [data-testid='stAppViewContainer'] label,
+        [data-testid='stAppViewContainer'] .stMarkdown, [data-testid='stAppViewContainer'] .stCaption {
+            color: var(--bookloop-ink);
+        }
+        [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: var(--bookloop-muted); }
         [data-testid='stSidebar'] {
             background: #17211f;
             border-right: 0;
@@ -53,6 +58,8 @@ def main() -> None:
             color: var(--bookloop-ink);
             min-height: 2.8rem;
         }
+        [data-testid='stTextInput'] input::placeholder { color: #6b7774; opacity: 1; }
+        [data-testid='stCheckbox'] label p { color: var(--bookloop-ink) !important; }
         [data-testid='stTextInput'] input:focus, [data-testid='stTextArea'] textarea:focus {
             border-color: var(--bookloop-teal);
             box-shadow: 0 0 0 2px rgba(11, 118, 110, .14);
@@ -91,6 +98,8 @@ def main() -> None:
         st.session_state.username = None
     if "user_id" not in st.session_state:
         st.session_state.user_id = None
+    if "registration_challenge_id" not in st.session_state:
+        st.session_state.registration_challenge_id = None
 
     st.markdown('<div class="bookloop-kicker">A smarter school exchange</div>', unsafe_allow_html=True)
     st.title("BookLoop")
@@ -210,7 +219,8 @@ def main() -> None:
                         )
                         if otp_res.status_code == 200:
                             st.session_state.registration_challenge_id = otp_res.json()["challenge_id"]
-                            st.success("Verification code sent. Check the email address above.")
+                            st.session_state.registration_otp_sent_to = reg_email.strip().lower()
+                            st.success("Verification code sent. Check your inbox and spam folder.")
                         else:
                             try:
                                 detail = otp_res.json().get("detail", "Could not send verification code.")
@@ -225,43 +235,59 @@ def main() -> None:
                         st.error(f"Could not send verification code: {e}")
 
             if st.session_state.get("registration_challenge_id"):
+                st.info(
+                    f"Enter the 6-digit code sent to {st.session_state.get('registration_otp_sent_to', reg_email.strip())}."
+                )
                 with st.form("verify_registration_form"):
-                    registration_otp = st.text_input("Verification Code", max_chars=6, placeholder="6-digit code")
+                    registration_otp = st.text_input(
+                        "Email verification code",
+                        max_chars=6,
+                        placeholder="Enter 6 digits",
+                        key="registration_otp",
+                    )
                     verify_otp = st.form_submit_button("Verify and Register")
 
                 if verify_otp:
-                    try:
-                        verify_res = requests.post(
-                            f"{API_URL}/register/verify-otp",
-                            params={
-                                "challenge_id": st.session_state.registration_challenge_id,
-                                "otp": registration_otp,
-                            },
-                            timeout=10,
-                        )
-                        if verify_res.status_code != 200:
-                            st.error(verify_res.json().get("detail", "Verification failed."))
-                        else:
-                            register_res = requests.post(
-                                f"{API_URL}/register",
+                    if not registration_otp.isdigit() or len(registration_otp) != 6:
+                        st.error("Enter the 6-digit verification code from your email.")
+                    else:
+                        try:
+                            verify_res = requests.post(
+                                f"{API_URL}/register/verify-otp",
                                 params={
-                                    "username": reg_user,
-                                    "email": reg_email.strip(),
-                                    "password": reg_pass,
-                                    "school_class": reg_class,
-                                    "verification_token": verify_res.json()["verification_token"],
+                                    "challenge_id": st.session_state.registration_challenge_id,
+                                    "otp": registration_otp,
                                 },
                                 timeout=10,
                             )
-                            if register_res.status_code == 201:
-                                st.session_state.pop("registration_challenge_id", None)
-                                st.success("Registration successful! You can now log in using the Login tab.")
+                            if verify_res.status_code != 200:
+                                try:
+                                    detail = verify_res.json().get("detail", "Verification failed.")
+                                except ValueError:
+                                    detail = f"Verification service returned HTTP {verify_res.status_code}."
+                                st.error(detail)
                             else:
-                                st.error(register_res.json().get("detail", "Registration failed."))
-                    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-                        st.error("Cannot reach the registration service. Is the backend running?")
-                    except Exception as e:
-                        st.error(f"Registration failed: {e}")
+                                register_res = requests.post(
+                                    f"{API_URL}/register",
+                                    params={
+                                        "username": reg_user,
+                                        "email": reg_email.strip(),
+                                        "password": reg_pass,
+                                        "school_class": reg_class,
+                                        "verification_token": verify_res.json()["verification_token"],
+                                    },
+                                    timeout=10,
+                                )
+                                if register_res.status_code == 201:
+                                    st.session_state.registration_challenge_id = None
+                                    st.session_state.registration_otp_sent_to = None
+                                    st.success("Registration successful. You can now sign in.")
+                                else:
+                                    st.error(register_res.json().get("detail", "Registration failed."))
+                        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                            st.error("Cannot reach the registration service. Please try again shortly.")
+                        except Exception as e:
+                            st.error(f"Registration failed: {e}")
 
 
 if __name__ == "__main__":

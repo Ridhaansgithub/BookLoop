@@ -72,7 +72,11 @@ def send_otp_email(recipient: str, otp: str) -> None:
     except ValueError as error:
         raise HTTPException(status_code=503, detail="SMTP_PORT must be a valid number on the server.") from error
     smtp_username = os.getenv("SMTP_USERNAME", "").strip()
-    smtp_password = re.sub(r"\s+", "", os.getenv("SMTP_PASSWORD", ""))
+    smtp_password = re.sub(
+        r"\s+",
+        "",
+        os.getenv("SMTP_PASSWORD") or os.getenv("APP_PASSWORD", ""),
+    )
     if not all((smtp_host, smtp_username, smtp_password)):
         raise HTTPException(status_code=503, detail="Email verification is not configured on the server.")
 
@@ -118,12 +122,12 @@ def register(
     db_user = db.query(models.User).filter((models.User.email == email) | (models.User.username == username)).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username or Email already registered")
-    
+
     hashed_pwd = auth.get_password_hash(password)
     new_user = models.User(
-        username=username, 
-        email=email, 
-        hashed_password=hashed_pwd, 
+        username=username,
+        email=email,
+        hashed_password=hashed_pwd,
         school_class=school_class
     )
     db.add(new_user)
@@ -180,7 +184,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     access_token = auth.create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer", "username": user.username}
 
