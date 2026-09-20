@@ -132,15 +132,21 @@ def main() -> None:
                         otp_res = requests.post(
                             f"{API_URL}/register/request-otp",
                             params={"email": reg_email.strip(), "is_under_18": is_under_18},
-                            timeout=10,
+                            timeout=20,
                         )
                         if otp_res.status_code == 200:
                             st.session_state.registration_challenge_id = otp_res.json()["challenge_id"]
                             st.success("Verification code sent. Check the email address above.")
                         else:
-                            st.error(otp_res.json().get("detail", "Could not send verification code."))
-                    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-                        st.error("Cannot reach the verification service. Is the backend running?")
+                            try:
+                                detail = otp_res.json().get("detail", "Could not send verification code.")
+                            except ValueError:
+                                detail = f"Verification service returned HTTP {otp_res.status_code}."
+                            st.error(detail)
+                    except requests.exceptions.Timeout:
+                        st.error("The verification service took too long to respond. Please try again.")
+                    except requests.exceptions.ConnectionError:
+                        st.error("Cannot connect to the verification service. Please try again shortly.")
                     except Exception as e:
                         st.error(f"Could not send verification code: {e}")
 

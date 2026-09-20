@@ -13,8 +13,14 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 # Load environment variables from .env file in parent directory
+# (local development only - won't exist on Render)
 ENV_PATH = Path(__file__).parent.parent / ".env"
-load_dotenv(ENV_PATH)
+if ENV_PATH.exists():
+    load_dotenv(ENV_PATH)
+    print(f"✅ Loaded .env from {ENV_PATH}")
+else:
+    print(f"ℹ️  .env not found at {ENV_PATH} - using environment variables from system/Render")
+    load_dotenv()  # Load from environment variables
 
 import models
 import database
@@ -60,10 +66,10 @@ def validate_registration_email(email: str, is_under_18: bool) -> str:
 
 
 def send_otp_email(recipient: str, otp: str) -> None:
-    smtp_host = os.getenv("SMTP_HOST")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_username = os.getenv("SMTP_USERNAME")
-    smtp_password = os.getenv("SMTP_PASSWORD")
+    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    smtp_port = int(os.getenv("SMTP_PORT", "587").strip())
+    smtp_username = os.getenv("SMTP_USERNAME", "").strip()
+    smtp_password = re.sub(r"\s+", "", os.getenv("SMTP_PASSWORD", ""))
     if not all((smtp_host, smtp_username, smtp_password)):
         raise HTTPException(status_code=503, detail="Email verification is not configured on the server.")
 
@@ -72,10 +78,17 @@ def send_otp_email(recipient: str, otp: str) -> None:
     message["From"] = smtp_username
     message["To"] = recipient
     message.set_content(f"Your BookLoop verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.")
-    with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as smtp:
-        smtp.starttls()
-        smtp.login(smtp_username, smtp_password)
-        smtp.send_message(message)
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as smtp:
+            smtp.starttls()
+            smtp.login(smtp_username, smtp_password)
+            smtp.send_message(message)
+    except (OSError, smtplib.SMTPException) as error:
+        print(f"SMTP delivery failed: {error}")
+        raise HTTPException(
+            status_code=503,
+            detail="The email verification service is unavailable. Please try again shortly.",
+        ) from error
 
 
 @app.get("/health")
