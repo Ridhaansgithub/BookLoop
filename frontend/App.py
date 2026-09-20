@@ -2,10 +2,61 @@ import streamlit as st
 import requests
 import os
 import re
+import hmac
+import hashlib
+import secrets
+import smtplib
+from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 from frontend.config import API_URL
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+OTP_EXPIRY_MINUTES = 10
+
+
+def setting(name: str, default: str = "") -> str:
+    value = os.getenv(name)
+    if value:
+        return value
+    try:
+        return str(st.secrets.get(name, default))
+    except (FileNotFoundError, KeyError):
+        return default
+
+
+def create_registration_assertion(email: str) -> str:
+    signing_secret = setting("OTP_SIGNING_SECRET").strip()
+    if not signing_secret:
+        raise RuntimeError("OTP_SIGNING_SECRET is not configured in the Streamlit environment.")
+    expires_at = int((datetime.now(timezone.utc) + timedelta(minutes=OTP_EXPIRY_MINUTES)).timestamp())
+    payload = f"{email.strip().lower()}:{expires_at}"
+    signature = hmac.new(signing_secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{payload}:{signature}"
+
+
+def send_registration_otp(recipient: str, otp: str) -> None:
+    smtp_host = setting("SMTP_HOST", "smtp.gmail.com").strip()
+    smtp_username = setting("SMTP_USERNAME").strip()
+    smtp_password = re.sub(r"\s+", "", setting("APP_PASSWORD") or setting("SMTP_PASSWORD"))
+    try:
+        smtp_port = int(setting("SMTP_PORT", "587").strip())
+    except ValueError as error:
+        raise RuntimeError("SMTP_PORT must be a valid number in the Streamlit environment.") from error
+    if not smtp_username or not smtp_password:
+        raise RuntimeError("SMTP_USERNAME and APP_PASSWORD must be configured in Streamlit.")
+
+    message = EmailMessage()
+    message["Subject"] = "Your BookLoop verification code"
+    message["From"] = smtp_username
+    message["To"] = recipient
+    message.set_content(f"Your BookLoop verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.")
+    smtp_connection = smtplib.SMTP_SSL if smtp_port == 465 else smtplib.SMTP
+    with smtp_connection(smtp_host, smtp_port, timeout=15) as smtp:
+        if smtp_port != 465:
+            smtp.starttls()
+        smtp.login(smtp_username, smtp_password)
+        smtp.send_message(message)
 
 
 def page_path(name: str) -> str:
@@ -100,6 +151,10 @@ def main() -> None:
         st.session_state.user_id = None
     if "registration_challenge_id" not in st.session_state:
         st.session_state.registration_challenge_id = None
+    if "registration_code" not in st.session_state:
+        st.session_state.registration_code = None
+    if "registration_otp_expires_at" not in st.session_state:
+        st.session_state.registration_otp_expires_at = None
 
     st.markdown('<div class="bookloop-kicker">A smarter school exchange</div>', unsafe_allow_html=True)
     st.title("BookLoop")
@@ -212,27 +267,19 @@ def main() -> None:
                     st.error("Parental consent requires a Gmail address.")
                 else:
                     try:
-                        otp_res = requests.post(
-                            f"{API_URL}/register/request-otp",
-                            params={"email": reg_email.strip(), "is_under_18": is_under_18},
-                            timeout=20,
-                        )
-                        if otp_res.status_code == 200:
-                            st.session_state.registration_challenge_id = otp_res.json()["challenge_id"]
-                            st.session_state.registration_otp_sent_to = reg_email.strip().lower()
-                            st.success("Verification code sent. Check your inbox and spam folder.")
-                        else:
-                            try:
-                                detail = otp_res.json().get("detail", "Could not send verification code.")
-                            except ValueError:
-                                detail = f"Verification service returned HTTP {otp_res.status_code}."
-                            st.error(detail)
-                    except requests.exceptions.Timeout:
-                        st.error("The verification service took too long to respond. Please try again.")
-                    except requests.exceptions.ConnectionError:
-                        st.error("Cannot connect to the verification service. Please try again shortly.")
-                    except Exception as e:
-                        st.error(f"Could not send verification code: {e}")
+                        registration_otp = f"{secrets.randbelow(1_000_000):06d}"
+                        send_registration_otp(reg_email.strip(), registration_otp)
+                        st.session_state.registration_code = registration_otp
+                        st.session_state.registration_otp_expires_at = datetime.now(timezone.utc) + timedelta(minutes=OTP_EXPIRY_MINUTES)
+                        st.session_state.registration_challenge_id = "streamlit"
+                        st.session_state.registration_otp_sent_to = reg_email.strip().lower()
+                        st.success("Verification code sent. Check your inbox and spam folder.")
+                    except (OSError, smtplib.SMTPException) as error:
+                        st.error(f"Could not send the verification email: {error}")
+                    except RuntimeError as error:
+                        st.error(str(error))
+                    except Exception as error:
+                        st.error(f"Could not send the verification email: {error}")
 
             if st.session_state.get("registration_challenge_id"):
                 st.info(
@@ -243,47 +290,37 @@ def main() -> None:
                         "Email verification code",
                         max_chars=6,
                         placeholder="Enter 6 digits",
-                        key="registration_otp",
+                        key="registration_otp_input",
                     )
                     verify_otp = st.form_submit_button("Verify and Register")
 
                 if verify_otp:
                     if not registration_otp.isdigit() or len(registration_otp) != 6:
                         st.error("Enter the 6-digit verification code from your email.")
+                    elif datetime.now(timezone.utc) > st.session_state.registration_otp_expires_at:
+                        st.error("This verification code has expired. Request a new code.")
+                    elif not hmac.compare_digest(registration_otp, st.session_state.registration_code):
+                        st.error("Incorrect verification code.")
                     else:
                         try:
-                            verify_res = requests.post(
-                                f"{API_URL}/register/verify-otp",
+                            register_res = requests.post(
+                                f"{API_URL}/register",
                                 params={
-                                    "challenge_id": st.session_state.registration_challenge_id,
-                                    "otp": registration_otp,
+                                    "username": reg_user,
+                                    "email": reg_email.strip(),
+                                    "password": reg_pass,
+                                    "school_class": reg_class,
+                                    "verification_token": create_registration_assertion(reg_email),
                                 },
                                 timeout=10,
                             )
-                            if verify_res.status_code != 200:
-                                try:
-                                    detail = verify_res.json().get("detail", "Verification failed.")
-                                except ValueError:
-                                    detail = f"Verification service returned HTTP {verify_res.status_code}."
-                                st.error(detail)
+                            if register_res.status_code == 201:
+                                st.session_state.registration_challenge_id = None
+                                st.session_state.registration_code = None
+                                st.session_state.registration_otp_sent_to = None
+                                st.success("Registration successful. You can now sign in.")
                             else:
-                                register_res = requests.post(
-                                    f"{API_URL}/register",
-                                    params={
-                                        "username": reg_user,
-                                        "email": reg_email.strip(),
-                                        "password": reg_pass,
-                                        "school_class": reg_class,
-                                        "verification_token": verify_res.json()["verification_token"],
-                                    },
-                                    timeout=10,
-                                )
-                                if register_res.status_code == 201:
-                                    st.session_state.registration_challenge_id = None
-                                    st.session_state.registration_otp_sent_to = None
-                                    st.success("Registration successful. You can now sign in.")
-                                else:
-                                    st.error(register_res.json().get("detail", "Registration failed."))
+                                st.error(register_res.json().get("detail", "Registration failed."))
                         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
                             st.error("Cannot reach the registration service. Please try again shortly.")
                         except Exception as e:

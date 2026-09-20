@@ -3,11 +3,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from email.message import EmailMessage
-from datetime import datetime, timedelta
-import secrets
-import re
-import smtplib
+from datetime import datetime
+import hmac
+import hashlib
 import os
 from dotenv import load_dotenv
 from pathlib import Path
@@ -50,54 +48,28 @@ app.include_router(books.router)
 app.include_router(chat.router)
 app.include_router(reviews.router)
 
-OTP_EXPIRY_MINUTES = 10
-EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-otp_challenges = {}
-verified_registrations = {}
+OTP_SIGNING_SECRET = os.getenv("OTP_SIGNING_SECRET", "").strip()
 
 
-def validate_registration_email(email: str, is_under_18: bool) -> str:
-    normalized_email = email.strip().lower()
-    if not EMAIL_PATTERN.fullmatch(normalized_email):
-        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
-    if is_under_18 and not normalized_email.endswith("@gmail.com"):
-        raise HTTPException(status_code=400, detail="Parental consent requires a Gmail address.")
-    return normalized_email
-
-
-def send_otp_email(recipient: str, otp: str) -> None:
-    smtp_host = os.getenv("SMTP_HOST", "").strip()
+def validate_registration_assertion(token: str, email: str) -> None:
+    if not OTP_SIGNING_SECRET:
+        raise HTTPException(status_code=503, detail="OTP_SIGNING_SECRET is not configured on the server.")
     try:
-        smtp_port = int(os.getenv("SMTP_PORT", "587").strip())
-    except ValueError as error:
-        raise HTTPException(status_code=503, detail="SMTP_PORT must be a valid number on the server.") from error
-    smtp_username = os.getenv("SMTP_USERNAME", "").strip()
-    smtp_password = re.sub(
-        r"\s+",
-        "",
-        os.getenv("SMTP_PASSWORD") or os.getenv("APP_PASSWORD", ""),
-    )
-    if not all((smtp_host, smtp_username, smtp_password)):
-        raise HTTPException(status_code=503, detail="Email verification is not configured on the server.")
+        token_email, expires_at_text, signature = token.split(":", 2)
+        expires_at = int(expires_at_text)
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=400, detail="Email verification is required before registration.")
 
-    message = EmailMessage()
-    message["Subject"] = "Your BookLoop verification code"
-    message["From"] = smtp_username
-    message["To"] = recipient
-    message.set_content(f"Your BookLoop verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.")
-    try:
-        smtp_connection = smtplib.SMTP_SSL if smtp_port == 465 else smtplib.SMTP
-        with smtp_connection(smtp_host, smtp_port, timeout=15) as smtp:
-            if smtp_port != 465:
-                smtp.starttls()
-            smtp.login(smtp_username, smtp_password)
-            smtp.send_message(message)
-    except (OSError, smtplib.SMTPException) as error:
-        print(f"SMTP delivery failed: {error}")
-        raise HTTPException(
-            status_code=503,
-            detail="The email verification service is unavailable. Please try again shortly.",
-        ) from error
+    payload = f"{token_email}:{expires_at}"
+    expected_signature = hmac.new(
+        OTP_SIGNING_SECRET.encode(), payload.encode(), hashlib.sha256
+    ).hexdigest()
+    if (
+        not hmac.compare_digest(signature, expected_signature)
+        or token_email != email.strip().lower()
+        or expires_at < int(datetime.utcnow().timestamp())
+    ):
+        raise HTTPException(status_code=400, detail="Email verification is required before registration.")
 
 
 @app.get("/health")
@@ -114,9 +86,7 @@ def register(
     verification_token: str,
     db: Session = Depends(database.get_db),
 ):
-    registration = verified_registrations.pop(verification_token, None)
-    if not registration or registration["expires_at"] < datetime.utcnow() or registration["email"] != email.strip().lower():
-        raise HTTPException(status_code=400, detail="Email verification is required before registration.")
+    validate_registration_assertion(verification_token, email)
 
     # Check if user already exists
     db_user = db.query(models.User).filter((models.User.email == email) | (models.User.username == username)).first()
@@ -135,45 +105,6 @@ def register(
     db.refresh(new_user)
     return {"message": "User registered successfully", "user_id": new_user.id}
 
-
-@app.post("/register/request-otp")
-def request_registration_otp(email: str, is_under_18: bool):
-    normalized_email = validate_registration_email(email, is_under_18)
-    challenge_id = secrets.token_urlsafe(24)
-    otp = f"{secrets.randbelow(1_000_000):06d}"
-    otp_challenges[challenge_id] = {
-        "email": normalized_email,
-        "otp": otp,
-        "expires_at": datetime.utcnow() + timedelta(minutes=OTP_EXPIRY_MINUTES),
-        "attempts": 0,
-    }
-    try:
-        send_otp_email(normalized_email, otp)
-    except Exception:
-        otp_challenges.pop(challenge_id, None)
-        raise
-    return {"challenge_id": challenge_id, "message": "A verification code was sent to the email address."}
-
-
-@app.post("/register/verify-otp")
-def verify_registration_otp(challenge_id: str, otp: str):
-    challenge = otp_challenges.get(challenge_id)
-    if not challenge or challenge["expires_at"] < datetime.utcnow():
-        otp_challenges.pop(challenge_id, None)
-        raise HTTPException(status_code=400, detail="This verification code has expired. Request a new code.")
-    challenge["attempts"] += 1
-    if challenge["attempts"] > 5 or not secrets.compare_digest(challenge["otp"], otp.strip()):
-        if challenge["attempts"] > 5:
-            otp_challenges.pop(challenge_id, None)
-        raise HTTPException(status_code=400, detail="Incorrect verification code.")
-
-    otp_challenges.pop(challenge_id, None)
-    verification_token = secrets.token_urlsafe(24)
-    verified_registrations[verification_token] = {
-        "email": challenge["email"],
-        "expires_at": datetime.utcnow() + timedelta(minutes=OTP_EXPIRY_MINUTES),
-    }
-    return {"verification_token": verification_token}
 
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
