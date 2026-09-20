@@ -67,7 +67,10 @@ def validate_registration_email(email: str, is_under_18: bool) -> str:
 
 def send_otp_email(recipient: str, otp: str) -> None:
     smtp_host = os.getenv("SMTP_HOST", "").strip()
-    smtp_port = int(os.getenv("SMTP_PORT", "587").strip())
+    try:
+        smtp_port = int(os.getenv("SMTP_PORT", "587").strip())
+    except ValueError as error:
+        raise HTTPException(status_code=503, detail="SMTP_PORT must be a valid number on the server.") from error
     smtp_username = os.getenv("SMTP_USERNAME", "").strip()
     smtp_password = re.sub(r"\s+", "", os.getenv("SMTP_PASSWORD", ""))
     if not all((smtp_host, smtp_username, smtp_password)):
@@ -79,8 +82,10 @@ def send_otp_email(recipient: str, otp: str) -> None:
     message["To"] = recipient
     message.set_content(f"Your BookLoop verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.")
     try:
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as smtp:
-            smtp.starttls()
+        smtp_connection = smtplib.SMTP_SSL if smtp_port == 465 else smtplib.SMTP
+        with smtp_connection(smtp_host, smtp_port, timeout=15) as smtp:
+            if smtp_port != 465:
+                smtp.starttls()
             smtp.login(smtp_username, smtp_password)
             smtp.send_message(message)
     except (OSError, smtplib.SMTPException) as error:

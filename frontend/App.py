@@ -14,7 +14,75 @@ def page_path(name: str) -> str:
 
 
 def main() -> None:
-    st.set_page_config(page_title="BookLoop", page_icon="📚", layout="wide")
+    st.set_page_config(page_title="BookLoop | School book exchange", page_icon="📖", layout="wide")
+
+    st.markdown(
+        """
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+        :root {
+            --bookloop-ink: #17211f;
+            --bookloop-muted: #61706c;
+            --bookloop-paper: #f7f8f4;
+            --bookloop-line: #dce4df;
+            --bookloop-teal: #0b766e;
+            --bookloop-coral: #d95f4f;
+        }
+
+        .stApp {
+            background: linear-gradient(135deg, #f7f8f4 0%, #eef5f1 55%, #fdf8f3 100%);
+            color: var(--bookloop-ink);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        [data-testid='stHeader'] { background: transparent; }
+        [data-testid='stSidebar'] {
+            background: #17211f;
+            border-right: 0;
+        }
+        [data-testid='stSidebar'] * { color: #f7f8f4; }
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: 0; }
+        h1 { color: var(--bookloop-ink); font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; }
+        h2 { color: var(--bookloop-ink); }
+        [data-testid='stTextInput'] input, [data-testid='stSelectbox'] > div,
+        [data-testid='stNumberInput'] input, [data-testid='stTextArea'] textarea {
+            border: 1px solid var(--bookloop-line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .8);
+            color: var(--bookloop-ink);
+            min-height: 2.8rem;
+        }
+        [data-testid='stTextInput'] input:focus, [data-testid='stTextArea'] textarea:focus {
+            border-color: var(--bookloop-teal);
+            box-shadow: 0 0 0 2px rgba(11, 118, 110, .14);
+        }
+        .stButton > button, [data-testid='stFormSubmitButton'] button {
+            border: 0;
+            border-radius: 7px;
+            background: var(--bookloop-teal);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            min-height: 2.8rem;
+            padding: 0 1.15rem;
+            transition: transform .15s ease, background .15s ease;
+        }
+        .stButton > button:hover, [data-testid='stFormSubmitButton'] button:hover {
+            background: #095f59;
+            transform: translateY(-1px);
+        }
+        [data-baseweb='tab-list'] { gap: 1.5rem; border-bottom: 1px solid var(--bookloop-line); }
+        [data-baseweb='tab'] { color: var(--bookloop-muted); font-weight: 700; }
+        [aria-selected='true'] { color: var(--bookloop-teal) !important; }
+        [data-testid='stAlert'] { border-radius: 8px; }
+        .bookloop-kicker { color: var(--bookloop-teal); font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+        .bookloop-intro { color: var(--bookloop-muted); font-size: 1.05rem; max-width: 42rem; line-height: 1.6; }
+        .bookloop-rule { height: 3px; width: 4.5rem; background: var(--bookloop-coral); margin: 1rem 0 1.6rem; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # Initialize global session states if they don't exist
     if "token" not in st.session_state:
@@ -24,8 +92,13 @@ def main() -> None:
     if "user_id" not in st.session_state:
         st.session_state.user_id = None
 
-    st.title("🔄 BookLoop")
-    st.subheader("Buy and sell your school books face-to-face for less!")
+    st.markdown('<div class="bookloop-kicker">A smarter school exchange</div>', unsafe_allow_html=True)
+    st.title("BookLoop")
+    st.markdown(
+        '<div class="bookloop-intro">Pass on the books you have finished. Find the books you need next, at a fairer price.</div>'
+        '<div class="bookloop-rule"></div>',
+        unsafe_allow_html=True,
+    )
 
     # Sidebar login status dashboard
     if st.session_state.token:
@@ -54,7 +127,7 @@ def main() -> None:
         tab1, tab2 = st.tabs(["🔒 Login", "📝 Register Profile"])
 
         with tab1:
-            st.header("Login")
+            st.header("Welcome back")
             with st.form("login_form"):
                 login_user = st.text_input("Username", key="login_user")
                 login_pass = st.text_input("Password", type="password", key="login_pass")
@@ -109,7 +182,8 @@ def main() -> None:
                         st.error(f"Login failed: {e}")
 
         with tab2:
-            st.header("Create School Account")
+            st.header("Create your account")
+            st.caption("Use a verified email address to join your school book exchange.")
             with st.form("register_form"):
                 reg_user = st.text_input("Choose Username", key="reg_user")
                 is_under_18 = st.checkbox("I am under 18", key="reg_under_18")
