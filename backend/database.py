@@ -3,8 +3,13 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Use PostgreSQL on Render, SQLite locally
-DATABASE_URL = os.getenv("DATABASE_URL")
+# Use PostgreSQL on Render, SQLite locally. Prefer a public URL when one is
+# explicitly configured so the service can recover from an invalid private host.
+DATABASE_URL = (
+    os.getenv("DATABASE_PUBLIC_URL")
+    or os.getenv("EXTERNAL_DATABASE_URL")
+    or os.getenv("DATABASE_URL")
+)
 
 if not DATABASE_URL:
     # Local development with SQLite
@@ -29,4 +34,4 @@ def get_db():
     try:
         yield db
     finally:
-        db.close()
+        db.close()

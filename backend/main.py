@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import OperationalError
 from datetime import datetime
 import hmac
 import hashlib
@@ -27,8 +28,13 @@ import books
 import chat
 import reviews
 
-# Initialize Database tables
-models.Base.metadata.create_all(bind=database.engine)
+# Initialize database tables when the database is reachable. Render can still
+# start the API if a linked database URL is temporarily unavailable.
+try:
+    models.Base.metadata.create_all(bind=database.engine)
+except OperationalError as error:
+    print(f"⚠️ Database unavailable during startup: {error}")
+    print("Check DATABASE_PUBLIC_URL, EXTERNAL_DATABASE_URL, or DATABASE_URL in Render.")
 app = FastAPI(title="BookLoop API")
 
 # Enable CORS so Streamlit Cloud can call this API
