@@ -73,16 +73,17 @@ def main() -> None:
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
         :root {
-            --bookloop-ink: #17211f;
-            --bookloop-muted: #61706c;
-            --bookloop-paper: #f7f8f4;
-            --bookloop-line: #dce4df;
-            --bookloop-teal: #0b766e;
-            --bookloop-coral: #d95f4f;
+            --bookloop-ink: #101c3b;
+            --bookloop-muted: #657083;
+            --bookloop-paper: #f7f9fc;
+            --bookloop-line: #dce3ee;
+            --bookloop-teal: #087f89;
+            --bookloop-coral: #e67c5f;
+            --bookloop-blue: #142652;
         }
 
         .stApp {
-            background: linear-gradient(135deg, #f7f8f4 0%, #eef5f1 55%, #fdf8f3 100%);
+            background: linear-gradient(145deg, #fbfcfe 0%, #f1f6fb 58%, #fdf8f4 100%);
             color: var(--bookloop-ink);
             font-family: 'DM Sans', sans-serif;
         }
@@ -94,7 +95,7 @@ def main() -> None:
         }
         [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: var(--bookloop-muted); }
         [data-testid='stSidebar'] {
-            background: #17211f;
+            background: var(--bookloop-blue);
             border-right: 0;
         }
         [data-testid='stSidebar'] * { color: #f7f8f4; }
@@ -117,7 +118,7 @@ def main() -> None:
         }
         .stButton > button, [data-testid='stFormSubmitButton'] button {
             border: 0;
-            border-radius: 7px;
+            border-radius: 999px;
             background: var(--bookloop-teal);
             color: white;
             font-family: 'DM Sans', sans-serif;
@@ -137,6 +138,19 @@ def main() -> None:
         .bookloop-kicker { color: var(--bookloop-teal); font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
         .bookloop-intro { color: var(--bookloop-muted); font-size: 1.05rem; max-width: 42rem; line-height: 1.6; }
         .bookloop-rule { height: 3px; width: 4.5rem; background: var(--bookloop-coral); margin: 1rem 0 1.6rem; }
+        .bookloop-brand { display: flex; align-items: center; gap: .7rem; margin: .2rem 0 2.2rem; }
+        .bookloop-mark { width: 2.35rem; height: 2rem; position: relative; display: inline-block; }
+        .bookloop-mark:before, .bookloop-mark:after { content: ''; position: absolute; top: .12rem; width: 1rem; height: 1.75rem; background: var(--bookloop-blue); border-radius: .15rem .5rem .15rem .15rem; transform: skewY(-7deg); }
+        .bookloop-mark:before { left: .1rem; border-right: .18rem solid #24a0a0; }
+        .bookloop-mark:after { right: .1rem; transform: skewY(7deg); border-left: .18rem solid #24a0a0; }
+        .bookloop-wordmark { color: var(--bookloop-blue); font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
+        .bookloop-wordmark span { color: var(--bookloop-teal); }
+        .bookloop-tagline { color: var(--bookloop-muted); font-size: .62rem; letter-spacing: .08em; margin-top: .25rem; }
+        .bookloop-hero { background: linear-gradient(105deg, #f8fbff 0%, #e8f5f5 100%); border-radius: 0 0 26px 26px; padding: 2rem 2.3rem 2.4rem; border: 1px solid #e4ebf2; }
+        .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
+        .bookloop-hero h1 span { color: var(--bookloop-teal); }
+        .bookloop-card { background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line); border-radius: 14px; padding: .85rem; height: 100%; box-shadow: 0 8px 24px rgba(16,28,59,.05); }
+        .bookloop-pill { display: inline-block; color: var(--bookloop-teal); background: #e4f5f3; border-radius: 999px; padding: .25rem .65rem; font-size: .72rem; font-weight: 700; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -156,11 +170,11 @@ def main() -> None:
     if "registration_otp_expires_at" not in st.session_state:
         st.session_state.registration_otp_expires_at = None
 
-    st.markdown('<div class="bookloop-kicker">A smarter school exchange</div>', unsafe_allow_html=True)
-    st.title("BookLoop")
     st.markdown(
-        '<div class="bookloop-intro">Pass on the books you have finished. Find the books you need next, at a fairer price.</div>'
-        '<div class="bookloop-rule"></div>',
+        '<div class="bookloop-brand">'
+        '<span class="bookloop-mark"></span>'
+        '<div><div class="bookloop-wordmark">Book<span>Loop</span></div>'
+        '<div class="bookloop-tagline">BUY · SELL · SWAP · DONATE</div></div></div>',
         unsafe_allow_html=True,
     )
 
@@ -187,6 +201,12 @@ def main() -> None:
         pg = st.navigation(pages)
         pg.run()
     else:
+        st.markdown('<div class="bookloop-hero">', unsafe_allow_html=True)
+        st.markdown('<div class="bookloop-kicker">Books today. Brighter tomorrows.</div>', unsafe_allow_html=True)
+        st.markdown('<h1>Textbooks find their <span>next chapter.</span></h1>', unsafe_allow_html=True)
+        st.markdown('<div class="bookloop-intro">Buy, sell, swap, or donate academic books. Save money, support students, and keep good books moving.</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
         # Auth Interface (Only shows up if student is not logged in)
         tab1, tab2 = st.tabs(["🔒 Login", "📝 Register Profile"])
 
