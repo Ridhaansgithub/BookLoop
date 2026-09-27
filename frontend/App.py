@@ -93,7 +93,7 @@ def main() -> None:
         [data-testid='stAppViewContainer'] .stMarkdown, [data-testid='stAppViewContainer'] .stCaption {
             color: var(--bookloop-ink);
         }
-        [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: var(--bookloop-muted); }
+        [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: #4f5b6d; }
         [data-testid='stSidebar'] {
             background: var(--bookloop-blue);
             border-right: 0;
@@ -106,13 +106,14 @@ def main() -> None:
         [data-testid='stNumberInput'] input, [data-testid='stTextArea'] textarea {
             border: 1px solid var(--bookloop-line);
             border-radius: 8px;
-            background: rgba(255, 255, 255, .8);
+            background: #ffffff;
             color: var(--bookloop-ink);
             min-height: 2.8rem;
         }
-        [data-testid='stTextInput'] input::placeholder { color: #6b7774; opacity: 1; }
+        [data-testid='stTextInput'] input::placeholder, [data-testid='stTextArea'] textarea::placeholder { color: #596579; opacity: 1; }
         [data-testid='stCheckbox'] label p { color: var(--bookloop-ink) !important; }
-        [data-testid='stTextInput'] input:focus, [data-testid='stTextArea'] textarea:focus {
+        [data-testid='stTextInput'] input:focus, [data-testid='stTextArea'] textarea:focus,
+        [data-testid='stSelectbox'] [role='combobox']:focus-visible {
             border-color: var(--bookloop-teal);
             box-shadow: 0 0 0 2px rgba(11, 118, 110, .14);
         }
@@ -135,6 +136,21 @@ def main() -> None:
         [data-baseweb='tab'] { color: var(--bookloop-muted); font-weight: 700; }
         [aria-selected='true'] { color: var(--bookloop-teal) !important; }
         [data-testid='stAlert'] { border-radius: 8px; }
+        [data-testid='stRadio'] [role='radiogroup'] { gap: .6rem; }
+        [data-testid='stRadio'] label { font-weight: 700; }
+        [data-testid='stSidebar'] [data-testid='stAlert'] p { color: #f7f8f4 !important; }
+        .registration-success { text-align: center; padding: .8rem .3rem 1.2rem; }
+        .success-checkmark {
+            width: 4.5rem; height: 4.5rem; margin: 0 auto 1rem; border-radius: 50%;
+            display: grid; place-items: center; background: #e4f5f3; color: #087f65;
+            font-size: 2.8rem; font-weight: 700; animation: check-pop .55s cubic-bezier(.2, .8, .2, 1) both;
+        }
+        @keyframes check-pop {
+            0% { transform: scale(.35) rotate(-25deg); opacity: 0; }
+            65% { transform: scale(1.12) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) { .success-checkmark { animation: none; } }
         .bookloop-kicker { color: var(--bookloop-teal); font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
         .bookloop-intro { color: var(--bookloop-muted); font-size: 1.05rem; max-width: 42rem; line-height: 1.6; }
         .bookloop-rule { height: 3px; width: 4.5rem; background: var(--bookloop-coral); margin: 1rem 0 1.6rem; }
@@ -169,6 +185,26 @@ def main() -> None:
         st.session_state.registration_code = None
     if "registration_otp_expires_at" not in st.session_state:
         st.session_state.registration_otp_expires_at = None
+    if "registration_success_pending" not in st.session_state:
+        st.session_state.registration_success_pending = False
+    if "registration_success_open" not in st.session_state:
+        st.session_state.registration_success_open = False
+    if "auth_view" not in st.session_state:
+        st.session_state.auth_view = "Login"
+
+    if st.session_state.registration_success_pending:
+        for field_key in (
+            "login_user", "login_pass", "reg_user", "reg_email", "reg_pass",
+            "reg_under_18", "reg_class", "registration_otp_input",
+        ):
+            st.session_state[field_key] = "Class 7" if field_key == "reg_class" else False if field_key == "reg_under_18" else ""
+        st.session_state.registration_challenge_id = None
+        st.session_state.registration_code = None
+        st.session_state.registration_otp_expires_at = None
+        st.session_state.registration_otp_sent_to = None
+        st.session_state.registration_success_pending = False
+        st.session_state.registration_success_open = True
+        st.session_state.auth_view = "Login"
 
     st.markdown(
         '<div class="bookloop-brand">'
@@ -208,9 +244,15 @@ def main() -> None:
         st.markdown('</div>', unsafe_allow_html=True)
 
         # Auth Interface (Only shows up if student is not logged in)
-        tab1, tab2 = st.tabs(["🔒 Login", "📝 Register Profile"])
+        st.radio(
+            "Account access",
+            ["Login", "Register Profile"],
+            horizontal=True,
+            key="auth_view",
+            label_visibility="collapsed",
+        )
 
-        with tab1:
+        if st.session_state.auth_view == "Login":
             st.header("Welcome back")
             with st.form("login_form"):
                 login_user = st.text_input("Username", key="login_user")
@@ -265,14 +307,14 @@ def main() -> None:
                     except Exception as e:
                         st.error(f"Login failed: {e}")
 
-        with tab2:
+        else:
             st.header("Create your account")
             st.caption("Use a verified email address to join your school book exchange.")
+            is_under_18 = st.checkbox("I am under 18", key="reg_under_18")
+            email_label = "Parent's Gmail Address" if is_under_18 else "Your Gmail Address"
+            email_placeholder = "parent@gmail.com" if is_under_18 else "you@gmail.com"
             with st.form("register_form"):
                 reg_user = st.text_input("Choose Username", key="reg_user")
-                is_under_18 = st.checkbox("I am under 18", key="reg_under_18")
-                email_label = "Parent's Gmail Address" if is_under_18 else "Your Email Address"
-                email_placeholder = "parent@gmail.com" if is_under_18 else "you@example.com"
                 reg_email = st.text_input(email_label, placeholder=email_placeholder, key="reg_email")
                 reg_pass = st.text_input("Password", type="password", key="reg_pass")
                 reg_class = st.selectbox("Your Current Class/Year group", ["Class 7", "Class 8", "Class 9", "Class 10", "Class 11"], key="reg_class")
@@ -335,16 +377,29 @@ def main() -> None:
                                 timeout=10,
                             )
                             if register_res.status_code == 201:
-                                st.session_state.registration_challenge_id = None
-                                st.session_state.registration_code = None
-                                st.session_state.registration_otp_sent_to = None
-                                st.success("Registration successful. You can now sign in.")
+                                st.session_state.registration_success_pending = True
+                                st.rerun()
                             else:
                                 st.error(register_res.json().get("detail", "Registration failed."))
                         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
                             st.error("Cannot reach the registration service. Please try again shortly.")
                         except Exception as e:
                             st.error(f"Registration failed: {e}")
+
+        if st.session_state.registration_success_open:
+            @st.dialog("Registration complete")
+            def show_registration_success() -> None:
+                st.markdown(
+                    '<div class="registration-success"><div class="success-checkmark">✓</div>'
+                    '<p>Congratulations, you have signed up!</p></div>',
+                    unsafe_allow_html=True,
+                )
+                if st.button("Continue to sign in", type="primary", use_container_width=True):
+                    st.session_state.registration_success_open = False
+                    st.session_state.auth_view = "Login"
+                    st.rerun()
+
+            show_registration_success()
 
 
 if __name__ == "__main__":
