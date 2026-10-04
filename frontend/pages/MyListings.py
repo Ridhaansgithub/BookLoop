@@ -78,6 +78,12 @@ else:
                 st.write("### Actions")
 
                 if book.get("status") == "available":
+                    buyer_id = st.number_input(
+                        "Buyer user ID (optional)",
+                        min_value=0,
+                        step=1,
+                        key=f"buyer_{book['id']}"
+                    )
                     if st.button(
                         "🤝 Mark as Sold",
                         key=f"sold_{book['id']}",
@@ -85,7 +91,8 @@ else:
                     ):
                         res = requests.put(
                             f"{API_URL}/books/{book['id']}/sold",
-                            headers=headers
+                            headers=headers,
+                            params={"buyer_id": int(buyer_id)} if buyer_id else None
                         )
 
                         if res.status_code == 200:

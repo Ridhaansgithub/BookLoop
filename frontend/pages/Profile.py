@@ -8,7 +8,7 @@ if not st.session_state.get("token"):
     st.error("🔒 Please log in on the main screen to access profiles.")
 else:
     headers = {"Authorization": f"Bearer {st.session_state.token}"}
-    tab1, tab2 = st.tabs(["My Profile Card", "⭐ Leave a Swap Review"])
+    tab1, tab2, tab3 = st.tabs(["My Profile Card", "⭐ Leave a Swap Review", "Classmate Book Counts"])
     
     with tab1:
         try:
@@ -16,6 +16,10 @@ else:
             st.subheader(f"Username: {profile['username']} (User ID: {st.session_state.user_id})")
             st.write(f"🎒 **Registered Class/Year:** {profile['school_class']}")
             st.markdown(f"### ⭐ Classmate Trust Score: **{profile['average_rating']} / 5.0**")
+            count_col1, count_col2, count_col3 = st.columns(3)
+            count_col1.metric("Listed", profile["books_listed"])
+            count_col2.metric("Sold", profile["books_sold"])
+            count_col3.metric("Bought", profile["books_bought"])
             
             st.write("---")
             st.markdown("### 📝 Recent Feedback History")
@@ -51,3 +55,19 @@ else:
                     st.success("Thank you! Feedback submitted safely to their profile card.")
                 else:
                     st.error(res.json().get("detail", "Failed to submit review."))
+
+    with tab3:
+        st.subheader("View a classmate's book activity")
+        target_profile_id = st.number_input("User ID", min_value=1, step=1, key="count_profile_id")
+        if st.button("View book counts"):
+            response = requests.get(f"{API_URL}/users/{int(target_profile_id)}/profile", timeout=10)
+            if response.status_code == 200:
+                viewed_profile = response.json()
+                class_name = viewed_profile["school_class"] or "Class not provided"
+                st.write(f"**{viewed_profile['username']}** · {class_name}")
+                count_col1, count_col2, count_col3 = st.columns(3)
+                count_col1.metric("Listed", viewed_profile["books_listed"])
+                count_col2.metric("Sold", viewed_profile["books_sold"])
+                count_col3.metric("Bought", viewed_profile["books_bought"])
+            else:
+                st.error(response.json().get("detail", "Could not load this profile."))

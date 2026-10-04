@@ -32,11 +32,22 @@ def get_user_profile(user_id: int, db: Session = Depends(database.get_db)):
     # Calculate average star rating cleanly
     avg_rating = db.query(func.avg(models.Review.rating)).filter(models.Review.reviewed_user_id == user_id).scalar()
     reviews = db.query(models.Review).filter(models.Review.reviewed_user_id == user_id).order_by(models.Review.timestamp.desc()).all()
+    listed_count = db.query(func.count(models.Book.id)).filter(models.Book.seller_id == user_id).scalar()
+    sold_count = db.query(func.count(models.Book.id)).filter(
+        models.Book.seller_id == user_id,
+        models.Book.status == "sold"
+    ).scalar()
+    bought_count = db.query(func.count(models.BookPurchase.id)).filter(
+        models.BookPurchase.buyer_id == user_id
+    ).scalar()
     
     return {
         "username": user.username,
         "school_class": user.school_class,
         "average_rating": round(avg_rating, 1) if avg_rating else 0.0,
+        "books_listed": listed_count,
+        "books_sold": sold_count,
+        "books_bought": bought_count,
         "reviews": reviews
     }
     

@@ -4,5 +4,6 @@ sqlalchemy
 bcrypt
 python-jose[cryptography]
 python-multipart
+Pillow
 psycopg2-binary
 python-dotenv

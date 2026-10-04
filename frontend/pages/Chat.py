@@ -10,9 +10,20 @@ else:
     headers = {"Authorization": f"Bearer {st.session_state.token}"}
     
     try:
-        channels = requests.get(f"{API_URL}/chat/channels", headers=headers).json()
-    except Exception:
-        channels = []
+        response = requests.get(f"{API_URL}/chat/channels", headers=headers, timeout=10)
+        if not response.ok:
+            try:
+                error_payload = response.json()
+            except ValueError:
+                error_payload = {}
+            detail = error_payload.get("detail", response.text) if isinstance(error_payload, dict) else response.text
+            raise requests.HTTPError(f"Chat service error ({response.status_code}): {detail}")
+        channels = response.json()
+        if not isinstance(channels, list) or any(not isinstance(channel, dict) for channel in channels):
+            raise ValueError("The chat service returned an invalid conversation list.")
+    except (requests.RequestException, ValueError) as error:
+        st.error(f"Could not load your conversations: {error}")
+        st.stop()
 
     if not channels:
         st.info("No open chats yet. Visit the Marketplace page and click 'Chat with Seller' on a book!")

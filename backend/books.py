@@ -1,5 +1,6 @@
 import os
-import shutil
+from uuid import uuid4
+from PIL import Image, ImageOps, UnidentifiedImageError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 
@@ -28,11 +29,15 @@ async def add_book(
     image_url = None
 
     if image:
-        filename = f"{current_user.id}_{image.filename}"
+        filename = f"{current_user.id}_{uuid4().hex}.jpg"
         filepath = os.path.join(UPLOAD_DIR, filename)
 
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
+        try:
+            uploaded_image = Image.open(image.file)
+            normalized_image = ImageOps.fit(uploaded_image.convert("RGB"), (600, 600))
+            normalized_image.save(filepath, format="JPEG", quality=90)
+        except (UnidentifiedImageError, OSError):
+            raise HTTPException(status_code=400, detail="Uploaded file is not a valid image.")
 
         image_url = filename
 
@@ -75,6 +80,7 @@ def get_my_books(
 @router.put("/books/{book_id}/sold")
 def mark_book_sold(
     book_id: int,
+    buyer_id: int | None = None,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
@@ -88,7 +94,16 @@ def mark_book_sold(
     if book.seller_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    if buyer_id is not None:
+        if buyer_id == current_user.id:
+            raise HTTPException(status_code=400, detail="You cannot mark yourself as the buyer.")
+        buyer = db.query(models.User).filter(models.User.id == buyer_id).first()
+        if not buyer:
+            raise HTTPException(status_code=404, detail="Buyer not found")
+
     book.status = "sold"
+    if buyer_id is not None:
+        db.add(models.BookPurchase(book_id=book.id, buyer_id=buyer_id))
 
     db.commit()
 

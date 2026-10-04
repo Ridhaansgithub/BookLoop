@@ -38,6 +38,16 @@ class ChatMessage(Base):
     message = Column(String, nullable=False)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+
+class BookPurchase(Base):
+    __tablename__ = "book_purchases"
+
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("books.id"), unique=True, nullable=False)
+    buyer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+
 class Review(Base):
     __tablename__ = "reviews"
     id = Column(Integer, primary_key=True, index=True)
