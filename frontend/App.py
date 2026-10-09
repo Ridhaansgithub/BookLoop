@@ -73,19 +73,19 @@ def main() -> None:
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 
         :root {
-            --bookloop-ink: #0f172a;
-            --bookloop-muted: #53657a;
+            --bookloop-ink: #51755A;
+            --bookloop-muted: #6d8477;
             --bookloop-paper: #f7f9fc;
-            --bookloop-line: #dfe7ec;
-            --bookloop-teal: #6ca58a;
-            --bookloop-coral: #6ca58a;
-            --bookloop-blue: #0f172a;
-            --bookloop-soft-green: #eaf4ee;
+            --bookloop-line: #dfe7e1;
+            --bookloop-teal: #51755A;
+            --bookloop-coral: #51755A;
+            --bookloop-blue: #51755A;
+            --bookloop-soft-green: #edf4ef;
         }
 
         .stApp {
-            background: linear-gradient(145deg, #fbfcfe 0%, #f1f6fb 58%, #fdf8f4 100%);
-            color: var(--bookloop-ink);
+            background: linear-gradient(145deg, #51755A 0%, #4a6d52 100%);
+            color: #ffffff;
             font-family: 'DM Sans', sans-serif;
         }
 
@@ -96,7 +96,7 @@ def main() -> None:
         }
         [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: #425467; }
         [data-testid='stSidebar'] {
-            background: var(--bookloop-teal);
+            background: #51755A;
             border-right: 0;
         }
         [data-testid='stSidebar'] * { color: #f7f8f4; }
@@ -125,7 +125,7 @@ def main() -> None:
         .stButton > button, [data-testid='stFormSubmitButton'] button {
             border: 0;
             border-radius: 999px;
-            background: var(--bookloop-teal);
+            background: #51755A;
             color: white;
             font-family: 'DM Sans', sans-serif;
             font-weight: 700;
@@ -134,7 +134,7 @@ def main() -> None:
             transition: transform .15s ease, background .15s ease;
         }
         .stButton > button:hover, [data-testid='stFormSubmitButton'] button:hover {
-            background: #5f9a7c;
+            background: #44664d;
             transform: translateY(-1px);
         }
         [data-baseweb='tab-list'] { gap: 1.5rem; border-bottom: 1px solid var(--bookloop-line); }
