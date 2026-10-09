@@ -100,6 +100,7 @@ def main() -> None:
             border-right: 0;
         }
         [data-testid='stSidebar'] * { color: #f7f8f4; }
+        [data-testid='stSidebarNav'] a { font-size: 1.05rem; }
         h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: 0; }
         h1 { color: var(--bookloop-ink); font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; }
         h2 { color: var(--bookloop-ink); }
@@ -174,7 +175,7 @@ def main() -> None:
             margin-top: 0;
         }
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
-        .bookloop-hero h1 span { color: var(--bookloop-teal); }
+        .bookloop-hero h1 span { color: #51755A; }
         .bookloop-card { background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line); border-radius: 14px; padding: .85rem; height: 100%; box-shadow: 0 8px 24px rgba(16,28,59,.05); }
         .bookloop-pill { display: inline-block; color: var(--bookloop-teal); background: #e4f5f3; border-radius: 999px; padding: .25rem .65rem; font-size: .72rem; font-weight: 700; }
         </style>
