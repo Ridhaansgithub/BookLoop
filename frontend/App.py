@@ -232,12 +232,6 @@ def main() -> None:
     logo_path = os.path.join(APP_DIR, "assets", "bookloop-logo.png")
     if os.path.exists(logo_path):
         st.image(logo_path, use_container_width=False, width=520)
-        st.markdown(
-            '<div style="text-align:center; margin-top: 0.2rem; margin-bottom: 0.3rem;">'
-            '<span class="bookloop-script-tagline">A smarter way to give books a second life.</span>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
     else:
         st.markdown(
             '<div class="bookloop-brand">'
