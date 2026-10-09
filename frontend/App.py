@@ -70,7 +70,7 @@ def main() -> None:
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 
         :root {
             --bookloop-ink: #101c3b;
@@ -162,6 +162,25 @@ def main() -> None:
         .bookloop-wordmark { color: var(--bookloop-blue); font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
         .bookloop-wordmark span { color: var(--bookloop-teal); }
         .bookloop-tagline { color: var(--bookloop-muted); font-size: .62rem; letter-spacing: .08em; margin-top: .25rem; }
+        .bookloop-script-tagline {
+            display: inline-block;
+            font-family: 'Caveat', 'Comic Sans MS', cursive;
+            font-size: clamp(2rem, 3.3vw, 4rem);
+            line-height: 0.9;
+            font-weight: 600;
+            color: #0d172a;
+            letter-spacing: 0;
+            margin: 0.65rem auto 0.2rem;
+            text-align: center;
+            transform: rotate(-1.2deg);
+            max-width: 100%;
+        }
+        .bookloop-script-tagline .bookloop-script-underline {
+            display: inline-block;
+            border-bottom: 5px solid #0b7d5f;
+            line-height: 0.7;
+            padding-bottom: 0.15rem;
+        }
         .bookloop-hero { background: linear-gradient(105deg, #f8fbff 0%, #e8f5f5 100%); border-radius: 0 0 26px 26px; padding: 2rem 2.3rem 2.4rem; border: 1px solid #e4ebf2; }
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
         .bookloop-hero h1 span { color: var(--bookloop-teal); }
@@ -206,13 +225,25 @@ def main() -> None:
         st.session_state.registration_success_open = True
         st.session_state.auth_view = "Login"
 
-    st.markdown(
-        '<div class="bookloop-brand">'
-        '<span class="bookloop-mark"></span>'
-        '<div><div class="bookloop-wordmark">Book<span>Loop</span></div>'
-        '<div class="bookloop-tagline">BUY · SELL · SWAP · DONATE</div></div></div>',
-        unsafe_allow_html=True,
-    )
+    logo_path = os.path.join(APP_DIR, "assets", "bookloop-logo.png")
+    if os.path.exists(logo_path):
+        st.image(logo_path, use_container_width=False, width=520)
+        st.markdown(
+            '<div style="text-align:center; margin-top: 0.25rem; margin-bottom: 0.75rem;">'
+            '<span class="bookloop-script-tagline">Why buy another book when you can<br>'
+            '<span class="bookloop-script-underline">share, swap, and discover books with others?</span>'
+            '</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            '<div class="bookloop-brand">'
+            '<span class="bookloop-mark"></span>'
+            '<div><div class="bookloop-wordmark">Book<span>Loop</span></div>'
+            '<div class="bookloop-tagline">BUY · SELL · SWAP · DONATE</div></div></div>',
+            unsafe_allow_html=True,
+        )
 
     # Sidebar login status dashboard
     if st.session_state.token:
@@ -238,7 +269,6 @@ def main() -> None:
         pg.run()
     else:
         st.markdown('<div class="bookloop-hero">', unsafe_allow_html=True)
-        st.markdown('<div class="bookloop-kicker">Books today. Brighter tomorrows.</div>', unsafe_allow_html=True)
         st.markdown('<h1>Textbooks find their <span>next chapter.</span></h1>', unsafe_allow_html=True)
         st.markdown('<div class="bookloop-intro">Buy, sell, swap, or donate academic books. Save money, support students, and keep good books moving.</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
