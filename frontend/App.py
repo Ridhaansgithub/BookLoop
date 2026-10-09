@@ -77,10 +77,10 @@ def main() -> None:
             --bookloop-muted: #53657a;
             --bookloop-paper: #f7f9fc;
             --bookloop-line: #dfe7ec;
-            --bookloop-teal: #0f7d5d;
-            --bookloop-coral: #0f7d5d;
+            --bookloop-teal: #6ca58a;
+            --bookloop-coral: #6ca58a;
             --bookloop-blue: #0f172a;
-            --bookloop-soft-green: #edf7f2;
+            --bookloop-soft-green: #eaf4ee;
         }
 
         .stApp {
@@ -96,7 +96,7 @@ def main() -> None:
         }
         [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: #425467; }
         [data-testid='stSidebar'] {
-            background: var(--bookloop-blue);
+            background: var(--bookloop-teal);
             border-right: 0;
         }
         [data-testid='stSidebar'] * { color: #f7f8f4; }
@@ -134,7 +134,7 @@ def main() -> None:
             transition: transform .15s ease, background .15s ease;
         }
         .stButton > button:hover, [data-testid='stFormSubmitButton'] button:hover {
-            background: #0a6a4f;
+            background: #5f9a7c;
             transform: translateY(-1px);
         }
         [data-baseweb='tab-list'] { gap: 1.5rem; border-bottom: 1px solid var(--bookloop-line); }
