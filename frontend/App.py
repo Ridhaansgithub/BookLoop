@@ -100,7 +100,11 @@ def main() -> None:
             border-right: 0;
         }
         [data-testid='stSidebar'] * { color: #f7f8f4; }
-        [data-testid='stSidebarNav'] a { font-size: 1.05rem; }
+        [data-testid='stSidebarNav'] a,
+        [data-testid='stSidebarNav'] a span {
+            color: #ffffff !important;
+            font-size: calc(1rem + 5px) !important;
+        }
         h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: 0; }
         h1 { color: var(--bookloop-ink); font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; }
         h2 { color: var(--bookloop-ink); }

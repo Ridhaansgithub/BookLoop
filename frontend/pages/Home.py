@@ -3,7 +3,7 @@ import requests
 from frontend.config import API_URL, GRADE_OPTIONS, grade_label
 
 st.markdown('<div class="bookloop-kicker">A better way to find your next book</div>', unsafe_allow_html=True)
-st.markdown('<h1>Find your <span style="color: #087f89;">next chapter.</span></h1>', unsafe_allow_html=True)
+st.markdown('<h1>Find your <span style="color: #000000;">next chapter.</span></h1>', unsafe_allow_html=True)
 st.markdown('<p class="bookloop-intro">Affordable school books, passed from one student to the next.</p>', unsafe_allow_html=True)
 
 search_col, filter_col = st.columns([2.4, 1])
