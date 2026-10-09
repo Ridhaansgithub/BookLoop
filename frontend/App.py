@@ -73,13 +73,14 @@ def main() -> None:
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 
         :root {
-            --bookloop-ink: #101c3b;
-            --bookloop-muted: #657083;
+            --bookloop-ink: #0f172a;
+            --bookloop-muted: #53657a;
             --bookloop-paper: #f7f9fc;
-            --bookloop-line: #dce3ee;
-            --bookloop-teal: #087f89;
-            --bookloop-coral: #e67c5f;
-            --bookloop-blue: #142652;
+            --bookloop-line: #dfe7ec;
+            --bookloop-teal: #0f7d5d;
+            --bookloop-coral: #0f7d5d;
+            --bookloop-blue: #0f172a;
+            --bookloop-soft-green: #edf7f2;
         }
 
         .stApp {
@@ -93,7 +94,7 @@ def main() -> None:
         [data-testid='stAppViewContainer'] .stMarkdown, [data-testid='stAppViewContainer'] .stCaption {
             color: var(--bookloop-ink);
         }
-        [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: #4f5b6d; }
+        [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: #425467; }
         [data-testid='stSidebar'] {
             background: var(--bookloop-blue);
             border-right: 0;
@@ -128,12 +129,12 @@ def main() -> None:
             color: white;
             font-family: 'DM Sans', sans-serif;
             font-weight: 700;
-            min-height: 2.8rem;
-            padding: 0 1.15rem;
+            min-height: 2.6rem;
+            padding: 0 1.1rem;
             transition: transform .15s ease, background .15s ease;
         }
         .stButton > button:hover, [data-testid='stFormSubmitButton'] button:hover {
-            background: #095f59;
+            background: #0a6a4f;
             transform: translateY(-1px);
         }
         [data-baseweb='tab-list'] { gap: 1.5rem; border-bottom: 1px solid var(--bookloop-line); }
@@ -155,7 +156,6 @@ def main() -> None:
             100% { transform: scale(1) rotate(0); opacity: 1; }
         }
         @media (prefers-reduced-motion: reduce) { .success-checkmark { animation: none; } }
-        .bookloop-kicker { color: var(--bookloop-teal); font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
         .bookloop-intro { color: var(--bookloop-muted); font-size: 1.05rem; max-width: 42rem; line-height: 1.6; }
         .bookloop-rule { height: 3px; width: 4.5rem; background: var(--bookloop-coral); margin: 1rem 0 1.6rem; }
         .bookloop-brand { display: flex; align-items: center; gap: .7rem; margin: .2rem 0 2.2rem; }
@@ -166,26 +166,13 @@ def main() -> None:
         .bookloop-wordmark { color: var(--bookloop-blue); font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
         .bookloop-wordmark span { color: var(--bookloop-teal); }
         .bookloop-tagline { color: var(--bookloop-muted); font-size: .62rem; letter-spacing: .08em; margin-top: .25rem; }
-        .bookloop-script-tagline {
-            display: inline-block;
-            font-family: 'Caveat', 'Comic Sans MS', cursive;
-            font-size: clamp(2.2rem, 3.2vw, 4rem);
-            line-height: 0.95;
-            font-weight: 600;
-            color: #0d172a;
-            letter-spacing: 0;
-            margin: 0.7rem auto 0;
-            text-align: center;
-            transform: rotate(-1.2deg);
-            max-width: 100%;
+        .bookloop-hero {
+            background: linear-gradient(105deg, #f8fbff 0%, #f4faf6 100%);
+            border-radius: 0 0 26px 26px;
+            padding: 1rem 2.3rem 1.8rem;
+            border: 1px solid #edf2f5;
+            margin-top: 0;
         }
-        .bookloop-script-tagline .bookloop-script-underline {
-            display: inline-block;
-            border-bottom: 5px solid #0b7d5f;
-            line-height: 0.7;
-            padding-bottom: 0.1rem;
-        }
-        .bookloop-hero { background: linear-gradient(105deg, #f8fbff 0%, #e8f5f5 100%); border-radius: 0 0 26px 26px; padding: 2rem 2.3rem 2.4rem; border: 1px solid #e4ebf2; }
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
         .bookloop-hero h1 span { color: var(--bookloop-teal); }
         .bookloop-card { background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line); border-radius: 14px; padding: .85rem; height: 100%; box-shadow: 0 8px 24px rgba(16,28,59,.05); }
