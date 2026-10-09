@@ -73,19 +73,19 @@ def main() -> None:
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 
         :root {
-            --bookloop-ink: #51755A;
-            --bookloop-muted: #6d8477;
+            --bookloop-ink: #0f172a;
+            --bookloop-muted: #53657a;
             --bookloop-paper: #f7f9fc;
-            --bookloop-line: #dfe7e1;
-            --bookloop-teal: #51755A;
-            --bookloop-coral: #51755A;
-            --bookloop-blue: #51755A;
+            --bookloop-line: #dfe7ec;
+            --bookloop-teal: #6ca58a;
+            --bookloop-coral: #6ca58a;
+            --bookloop-blue: #0f172a;
             --bookloop-soft-green: #edf4ef;
         }
 
         .stApp {
-            background: linear-gradient(145deg, #51755A 0%, #4a6d52 100%);
-            color: #ffffff;
+            background: linear-gradient(145deg, #fbfcfe 0%, #f1f6fb 58%, #fdf8f4 100%);
+            color: var(--bookloop-ink);
             font-family: 'DM Sans', sans-serif;
         }
 
@@ -120,7 +120,7 @@ def main() -> None:
         [data-testid='stTextInput'] input:focus, [data-testid='stTextArea'] textarea:focus,
         [data-testid='stSelectbox'] [role='combobox']:focus-visible {
             border-color: var(--bookloop-teal);
-            box-shadow: 0 0 0 2px rgba(11, 118, 110, .14);
+            box-shadow: 0 0 0 2px rgba(81, 117, 90, .2);
         }
         .stButton > button, [data-testid='stFormSubmitButton'] button {
             border: 0;
