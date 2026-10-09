@@ -108,7 +108,11 @@ def main() -> None:
             border-radius: 8px;
             background: #ffffff;
             color: var(--bookloop-ink);
-            min-height: 2.8rem;
+            min-height: 2.3rem;
+            height: 2.3rem;
+            padding-top: 0.2rem;
+            padding-bottom: 0.2rem;
+            font-size: 0.96rem;
         }
         [data-testid='stTextInput'] input::placeholder, [data-testid='stTextArea'] textarea::placeholder { color: #596579; opacity: 1; }
         [data-testid='stCheckbox'] label p { color: var(--bookloop-ink) !important; }
@@ -165,12 +169,12 @@ def main() -> None:
         .bookloop-script-tagline {
             display: inline-block;
             font-family: 'Caveat', 'Comic Sans MS', cursive;
-            font-size: clamp(2rem, 3.3vw, 4rem);
-            line-height: 0.9;
+            font-size: clamp(2.2rem, 3.2vw, 4rem);
+            line-height: 0.95;
             font-weight: 600;
             color: #0d172a;
             letter-spacing: 0;
-            margin: 0.65rem auto 0.2rem;
+            margin: 0.7rem auto 0;
             text-align: center;
             transform: rotate(-1.2deg);
             max-width: 100%;
@@ -179,7 +183,7 @@ def main() -> None:
             display: inline-block;
             border-bottom: 5px solid #0b7d5f;
             line-height: 0.7;
-            padding-bottom: 0.15rem;
+            padding-bottom: 0.1rem;
         }
         .bookloop-hero { background: linear-gradient(105deg, #f8fbff 0%, #e8f5f5 100%); border-radius: 0 0 26px 26px; padding: 2rem 2.3rem 2.4rem; border: 1px solid #e4ebf2; }
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
@@ -229,10 +233,8 @@ def main() -> None:
     if os.path.exists(logo_path):
         st.image(logo_path, use_container_width=False, width=520)
         st.markdown(
-            '<div style="text-align:center; margin-top: 0.25rem; margin-bottom: 0.75rem;">'
-            '<span class="bookloop-script-tagline">Why buy another book when you can<br>'
-            '<span class="bookloop-script-underline">share, swap, and discover books with others?</span>'
-            '</span>'
+            '<div style="text-align:center; margin-top: 0.2rem; margin-bottom: 0.3rem;">'
+            '<span class="bookloop-script-tagline">A smarter way to give books a second life.</span>'
             '</div>',
             unsafe_allow_html=True,
         )
@@ -269,7 +271,7 @@ def main() -> None:
         pg.run()
     else:
         st.markdown('<div class="bookloop-hero">', unsafe_allow_html=True)
-        st.markdown('<h1>Textbooks find their <span>next chapter.</span></h1>', unsafe_allow_html=True)
+        st.markdown('<h1><span style="font-weight: 700;">Textbooks</span> find their <span>next chapter.</span></h1>', unsafe_allow_html=True)
         st.markdown('<div class="bookloop-intro">Buy, sell, swap, or donate academic books. Save money, support students, and keep good books moving.</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
