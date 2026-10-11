@@ -80,6 +80,7 @@ def get_my_books(
 @router.put("/books/{book_id}/sold")
 def mark_book_sold(
     book_id: int,
+    buyer_username: str | None = None,
     buyer_id: int | None = None,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
@@ -94,12 +95,25 @@ def mark_book_sold(
     if book.seller_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    if buyer_id is not None:
-        if buyer_id == current_user.id:
-            raise HTTPException(status_code=400, detail="You cannot mark yourself as the buyer.")
+    if buyer_username is not None and buyer_id is not None:
+        raise HTTPException(status_code=400, detail="Provide a buyer username or buyer ID, not both.")
+
+    buyer = None
+    if buyer_username is not None:
+        buyer = db.query(models.User).filter(
+            models.User.username == buyer_username.strip()
+        ).first()
+        if not buyer:
+            raise HTTPException(status_code=404, detail="Buyer not found")
+        buyer_id = buyer.id
+    elif buyer_id is not None:
         buyer = db.query(models.User).filter(models.User.id == buyer_id).first()
         if not buyer:
             raise HTTPException(status_code=404, detail="Buyer not found")
+
+    if buyer is not None:
+        if buyer.id == current_user.id:
+            raise HTTPException(status_code=400, detail="You cannot mark yourself as the buyer.")
 
     book.status = "sold"
     if buyer_id is not None:

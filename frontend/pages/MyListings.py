@@ -51,12 +51,14 @@ else:
                 if image_url:
                     st.image(
                         f"{API_URL}/uploads/books/{image_url}",
-                        width=120
+                        width=120,
                     )
                 else:
-                    st.image(
-                        "https://via.placeholder.com/120",
-                        caption="No Image"
+                    st.markdown(
+                        '<div style="width:120px; aspect-ratio:1; border-radius:10px; '
+                        'background:#e8f1f5; display:flex; align-items:center; '
+                        'justify-content:center; font-size:2rem;">📖</div>',
+                        unsafe_allow_html=True,
                     )
 
             with col2:
@@ -68,7 +70,7 @@ else:
                     f"**Class:** {book.get('target_class', 'N/A')}"
                 )
                 st.write(
-                    f"**Price:** £{float(book.get('price', 0)):.2f}"
+                    f"**Price:** ${float(book.get('price', 0)):.2f}"
                 )
                 st.write(
                     f"**Status:** {book.get('status', 'unknown').upper()}"
@@ -78,11 +80,9 @@ else:
                 st.write("### Actions")
 
                 if book.get("status") == "available":
-                    buyer_id = st.number_input(
-                        "Buyer user ID (optional)",
-                        min_value=0,
-                        step=1,
-                        key=f"buyer_{book['id']}"
+                    buyer_username = st.text_input(
+                        "Buyer username (optional)",
+                        key=f"buyer_username_{book['id']}",
                     )
                     if st.button(
                         "🤝 Mark as Sold",
@@ -92,7 +92,9 @@ else:
                         res = requests.put(
                             f"{API_URL}/books/{book['id']}/sold",
                             headers=headers,
-                            params={"buyer_id": int(buyer_id)} if buyer_id else None
+                            params={"buyer_username": buyer_username.strip()}
+                            if buyer_username.strip()
+                            else None,
                         )
 
                         if res.status_code == 200:

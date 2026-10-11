@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from frontend.config import API_URL, GRADE_OPTIONS, grade_label
+from frontend.config import API_URL, CATEGORY_OPTIONS, GRADE_OPTIONS, book_category, grade_label
 
 st.markdown('<div class="bookloop-kicker">A better way to find your next book</div>', unsafe_allow_html=True)
 st.markdown('<h1>Find your <span style="color: #000000;">next chapter.</span></h1>', unsafe_allow_html=True)
@@ -29,9 +29,22 @@ if not books:
 else:
     st.markdown('<div class="bookloop-section-title"><h2>Shop by category</h2><span class="bookloop-pill">SAT · ACT · AP · School</span></div>', unsafe_allow_html=True)
     categories = st.columns(4)
-    for category_col, title, subtitle in zip(categories, ["SAT Prep", "ACT Prep", "AP Books", "College Textbooks"], ["Practice smarter", "Reach your score", "Study with confidence", "Keep learning"]):
+    subtitles = ["Practice smarter", "Reach your score", "Study with confidence", "Keep learning"]
+    for category_col, title, subtitle in zip(categories, CATEGORY_OPTIONS, subtitles):
         with category_col:
-            st.markdown(f'<div class="bookloop-card"><span class="bookloop-pill">{title}</span><h3>{subtitle}</h3><p style="color:#657083;">Browse available listings</p></div>', unsafe_allow_html=True)
+            if st.button(
+                f"{title}\n\n{subtitle}\n\nBrowse available listings",
+                key=f"category_{title}",
+                use_container_width=True,
+            ):
+                st.session_state.selected_book_category = title
+
+    selected_category = st.session_state.get("selected_book_category")
+    if selected_category:
+        st.caption(f"Showing category: {selected_category}")
+        if st.button("Show all categories", key="clear_category_filter"):
+            st.session_state.selected_book_category = None
+            st.rerun()
 
     st.markdown('<div class="bookloop-section-title"><h2>Latest listings</h2></div>', unsafe_allow_html=True)
     cols = st.columns(3)
@@ -41,19 +54,24 @@ else:
         searchable_text = f'{book.get("title", "")} {book.get("author", "")} {book.get("target_class", "")}'.lower()
         if class_filter != "All" and book["target_class"] != class_filter:
             continue
+        if selected_category and book_category(book) != selected_category:
+            continue
         if search_term.strip().lower() not in searchable_text:
             continue
 
         with cols[idx % 3]:
             st.markdown('<div class="bookloop-card">', unsafe_allow_html=True)
-            if book["image_url"]:
-                st.image(f"{API_URL}/uploads/books/{book['image_url']}", use_container_width=True)
+            if book.get("image_url"):
+                st.image(
+                    f"{API_URL}/uploads/books/{book['image_url']}",
+                    use_container_width=True,
+                )
             else:
-                st.markdown('<div style="height:180px; border-radius:10px; background:#e8f1f5; display:flex; align-items:center; justify-content:center; font-size:3rem;">📖</div>', unsafe_allow_html=True)
+                st.markdown('<div style="aspect-ratio:1; border-radius:10px; background:#e8f1f5; display:flex; align-items:center; justify-content:center; font-size:3rem;">📖</div>', unsafe_allow_html=True)
                 
             st.subheader(book["title"])
             st.caption(f"{book['author']} · {grade_label(book['target_class'])}")
-            st.markdown(f"**£{book['price']:.2f}**")
+            st.markdown(f"**${book['price']:.2f}**")
             
             if st.button("💬 Chat with Seller", key=f"chat_btn_{book['id']}"):
                 if not st.session_state.get("token"):

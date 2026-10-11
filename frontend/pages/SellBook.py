@@ -13,7 +13,7 @@ with st.form("sell_book_form"):
     title = st.text_input("Book Title")
     author = st.text_input("Author")
     target_class = st.selectbox("Class / Course", GRADE_OPTIONS, format_func=grade_label)
-    price = st.number_input("Price (£)", min_value=0.0)
+    price = st.number_input("Price ($)", min_value=0.0)
 
     uploaded_file = st.file_uploader(
         "Upload Book Image (Optional)",

@@ -181,6 +181,12 @@ def main() -> None:
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
         .bookloop-hero h1 span { color: #51755A; }
         .bookloop-card { background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line); border-radius: 14px; padding: .85rem; height: 100%; box-shadow: 0 8px 24px rgba(16,28,59,.05); }
+        div[class*='st-key-category_'] button {
+            min-height: 9rem; border: 1px solid var(--bookloop-line); border-radius: 14px;
+            background: rgba(255,255,255,.88); color: var(--bookloop-ink);
+            box-shadow: 0 8px 24px rgba(16,28,59,.05); text-align: left;
+            white-space: pre-line; justify-content: flex-start;
+        }
         .bookloop-pill { display: inline-block; color: var(--bookloop-teal); background: #e4f5f3; border-radius: 999px; padding: .25rem .65rem; font-size: .72rem; font-weight: 700; }
         </style>
         """,
@@ -235,7 +241,7 @@ def main() -> None:
 
     # Sidebar login status dashboard
     if st.session_state.token:
-        st.sidebar.success(f"Logged in as: {st.session_state.username} (ID: {st.session_state.user_id})")
+        st.sidebar.success(f"Logged in as: {st.session_state.username}")
         if st.sidebar.button("Log Out"):
             st.session_state.token = None
             st.session_state.username = None
@@ -318,6 +324,11 @@ def main() -> None:
                                     st.error("Failed to retrieve your profile information.")
                             else:
                                 st.error("Invalid username or password.")
+                        elif res.status_code == 401:
+                            st.error("Incorrect username or password.")
+                        else:
+                            detail = res.json().get("detail", "Unable to sign in.")
+                            st.error(f"Login failed: {detail}")
                     except requests.exceptions.Timeout:
                         st.error("Request timed out. Is the backend running and reachable?")
                     except requests.exceptions.ConnectionError:
