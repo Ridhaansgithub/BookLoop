@@ -75,7 +75,7 @@ else:
 
         with cols[index % len(cols)]:
             st.markdown(
-                f'<a class="bookloop-listing-card" href="/product?book_id={int(book["id"])}">'
+                f'<a class="bookloop-listing-card" href="{escape(API_URL)}/book/{int(book["id"])}">'
                 f'{image_markup}<div class="bookloop-listing-copy">'
                 f'<h3>{title}</h3><p>{author} · {target_class}</p>'
                 f'<strong>{price}</strong></div></a>',

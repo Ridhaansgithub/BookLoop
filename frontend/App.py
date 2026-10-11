@@ -210,11 +210,6 @@ def main() -> None:
         .bookloop-listing-copy h3 { margin: 0 0 .45rem; color: var(--bookloop-ink); }
         .bookloop-listing-copy p { margin: 0 0 .65rem; color: #425467; }
         .bookloop-listing-copy strong { color: var(--bookloop-ink); }
-        .bookloop-product-image img, .bookloop-product-placeholder {
-            display: flex; width: 100%; aspect-ratio: 1; object-fit: contain;
-            align-items: center; justify-content: center; background: #e8f1f5;
-            border-radius: 14px; font-size: 4rem;
-        }
         .bookloop-pill { display: inline-block; color: var(--bookloop-teal); background: #e4f5f3; border-radius: 999px; padding: .25rem .65rem; font-size: .72rem; font-weight: 700; }
         </style>
         """,
@@ -286,12 +281,6 @@ def main() -> None:
             st.Page(page_path("SellBook.py"), title="Sell Book", icon="💰"),
             st.Page(page_path("Chat.py"), title="Chat", icon="💬"),
             st.Page(page_path("Profile.py"), title="Profile", icon="👤"),
-            st.Page(
-                page_path("ProductDetail.py"),
-                title="Product details",
-                url_path="product",
-                visibility="hidden",
-            ),
         ]
         pg = st.navigation(pages)
         pg.run()

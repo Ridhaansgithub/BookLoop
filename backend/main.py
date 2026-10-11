@@ -48,11 +48,11 @@ app.add_middleware(
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads")
 os.makedirs(os.path.join(UPLOAD_DIR, "books"), exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 app.include_router(books.router)
 app.include_router(chat.router)
 app.include_router(reviews.router)
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 OTP_SIGNING_SECRET = os.getenv("OTP_SIGNING_SECRET", "").strip()
 

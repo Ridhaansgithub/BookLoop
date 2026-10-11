@@ -61,6 +61,35 @@ else:
                         unsafe_allow_html=True,
                     )
 
+                with st.expander("Replace book photo"):
+                    replacement_image = st.file_uploader(
+                        "Upload a replacement photo",
+                        type=["jpg", "jpeg", "png"],
+                        key=f"replacement_image_{book['id']}",
+                    )
+                    if st.button(
+                        "Save photo",
+                        key=f"save_photo_{book['id']}",
+                        disabled=replacement_image is None,
+                    ):
+                        replacement_response = requests.put(
+                            f"{API_URL}/books/{book['id']}/image",
+                            headers=headers,
+                            files={
+                                "image": (
+                                    replacement_image.name,
+                                    replacement_image,
+                                    replacement_image.type,
+                                )
+                            },
+                            timeout=30,
+                        )
+                        if replacement_response.status_code == 200:
+                            st.success("Book photo updated.")
+                            st.rerun()
+                        else:
+                            st.error(replacement_response.text)
+
             with col2:
                 st.subheader(book.get("title", "Untitled"))
                 st.write(

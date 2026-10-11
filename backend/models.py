@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, LargeBinary
 from sqlalchemy.orm import relationship
 from database import Base
 import datetime
@@ -27,6 +27,14 @@ class Book(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     seller_id = Column(Integer, ForeignKey("users.id"))
     seller = relationship("User", back_populates="books_for_sale")
+
+
+class BookImage(Base):
+    __tablename__ = "book_images"
+
+    filename = Column(String, primary_key=True, index=True)
+    image_data = Column(LargeBinary, nullable=False)
+    content_type = Column(String, nullable=False, default="image/jpeg")
 
 
 class ChatMessage(Base):
