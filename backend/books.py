@@ -77,6 +77,17 @@ def get_my_books(
     ).all()
 
 
+@router.get("/books/{book_id}")
+def get_book(book_id: int, db: Session = Depends(database.get_db)):
+    book = db.query(models.Book).filter(
+        models.Book.id == book_id,
+        models.Book.status == "available",
+    ).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
+
+
 @router.put("/books/{book_id}/sold")
 def mark_book_sold(
     book_id: int,

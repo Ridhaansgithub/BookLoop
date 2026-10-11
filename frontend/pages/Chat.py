@@ -26,7 +26,7 @@ else:
         st.stop()
 
     if not channels:
-        st.info("No open chats yet. Visit the Marketplace page and click 'Chat with Seller' on a book!")
+        st.info("No open chats yet. Open a book listing and select 'Chat with Seller' on its details page.")
     else:
         options = [f"📚 {c['book_title']} (Classmate: {c['partner_name']})" for c in channels]
         selected_idx = st.selectbox("Select an Active Conversation Stream:", range(len(options)), format_func=lambda x: options[x])

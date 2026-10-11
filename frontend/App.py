@@ -182,10 +182,38 @@ def main() -> None:
         .bookloop-hero h1 span { color: #51755A; }
         .bookloop-card { background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line); border-radius: 14px; padding: .85rem; height: 100%; box-shadow: 0 8px 24px rgba(16,28,59,.05); }
         div[class*='st-key-category_'] button {
-            min-height: 9rem; border: 1px solid var(--bookloop-line); border-radius: 14px;
+            min-height: 5rem; border: 1px solid var(--bookloop-line); border-radius: 14px;
             background: rgba(255,255,255,.88); color: var(--bookloop-ink);
-            box-shadow: 0 8px 24px rgba(16,28,59,.05); text-align: left;
-            white-space: pre-line; justify-content: flex-start;
+            box-shadow: 0 8px 24px rgba(16,28,59,.05); text-align: center;
+            white-space: normal; justify-content: center; overflow-wrap: anywhere;
+            font-size: clamp(1.1rem, 1.7vw, 1.45rem); line-height: 1.2;
+        }
+        div[class*='st-key-category_'] button p {
+            font-size: inherit; line-height: inherit; overflow-wrap: anywhere;
+        }
+        .bookloop-listing-card {
+            display: block; height: 100%; overflow: hidden; color: var(--bookloop-ink);
+            background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line);
+            border-radius: 14px; box-shadow: 0 8px 24px rgba(16,28,59,.05);
+            text-decoration: none; transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .bookloop-listing-card:hover {
+            color: var(--bookloop-ink); transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(16,28,59,.12); text-decoration: none;
+        }
+        .bookloop-listing-card img, .bookloop-listing-placeholder {
+            display: flex; width: 100%; aspect-ratio: 1; object-fit: cover;
+            align-items: center; justify-content: center; background: #e8f1f5;
+            font-size: 3rem;
+        }
+        .bookloop-listing-copy { padding: .85rem; }
+        .bookloop-listing-copy h3 { margin: 0 0 .45rem; color: var(--bookloop-ink); }
+        .bookloop-listing-copy p { margin: 0 0 .65rem; color: #425467; }
+        .bookloop-listing-copy strong { color: var(--bookloop-ink); }
+        .bookloop-product-image img, .bookloop-product-placeholder {
+            display: flex; width: 100%; aspect-ratio: 1; object-fit: contain;
+            align-items: center; justify-content: center; background: #e8f1f5;
+            border-radius: 14px; font-size: 4rem;
         }
         .bookloop-pill { display: inline-block; color: var(--bookloop-teal); background: #e4f5f3; border-radius: 999px; padding: .25rem .65rem; font-size: .72rem; font-weight: 700; }
         </style>
@@ -258,6 +286,12 @@ def main() -> None:
             st.Page(page_path("SellBook.py"), title="Sell Book", icon="💰"),
             st.Page(page_path("Chat.py"), title="Chat", icon="💬"),
             st.Page(page_path("Profile.py"), title="Profile", icon="👤"),
+            st.Page(
+                page_path("ProductDetail.py"),
+                title="Product details",
+                url_path="product",
+                visibility="hidden",
+            ),
         ]
         pg = st.navigation(pages)
         pg.run()

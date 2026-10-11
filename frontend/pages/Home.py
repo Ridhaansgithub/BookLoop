@@ -1,5 +1,8 @@
-import streamlit as st
+from html import escape
+
 import requests
+import streamlit as st
+
 from frontend.config import API_URL, CATEGORY_OPTIONS, GRADE_OPTIONS, book_category, grade_label
 
 st.markdown('<div class="bookloop-kicker">A better way to find your next book</div>', unsafe_allow_html=True)
@@ -17,26 +20,20 @@ with filter_col:
         label_visibility="collapsed",
     )
 
-# Pull existing list from SQLite
 try:
-    books = requests.get(f"{API_URL}/books").json()
-except Exception:
+    books = requests.get(f"{API_URL}/books", timeout=10).json()
+except requests.exceptions.RequestException as error:
     books = []
-    st.error("Could not reach backend server database feed.")
+    st.error(f"Could not reach backend server database feed: {error}")
 
 if not books:
     st.write("No active books found right now. Be the first to list one!")
 else:
     st.markdown('<div class="bookloop-section-title"><h2>Shop by category</h2><span class="bookloop-pill">SAT · ACT · AP · School</span></div>', unsafe_allow_html=True)
     categories = st.columns(4)
-    subtitles = ["Practice smarter", "Reach your score", "Study with confidence", "Keep learning"]
-    for category_col, title, subtitle in zip(categories, CATEGORY_OPTIONS, subtitles):
+    for category_col, title in zip(categories, CATEGORY_OPTIONS):
         with category_col:
-            if st.button(
-                f"{title}\n\n{subtitle}\n\nBrowse available listings",
-                key=f"category_{title}",
-                use_container_width=True,
-            ):
+            if st.button(title, key=f"category_{title}", use_container_width=True):
                 st.session_state.selected_book_category = title
 
     selected_category = st.session_state.get("selected_book_category")
@@ -48,8 +45,8 @@ else:
 
     st.markdown('<div class="bookloop-section-title"><h2>Latest listings</h2></div>', unsafe_allow_html=True)
     cols = st.columns(3)
-    idx = 0
-    
+    visible_books = []
+
     for book in books:
         searchable_text = f'{book.get("title", "")} {book.get("author", "")} {book.get("target_class", "")}'.lower()
         if class_filter != "All" and book["target_class"] != class_filter:
@@ -58,41 +55,32 @@ else:
             continue
         if search_term.strip().lower() not in searchable_text:
             continue
+        visible_books.append(book)
 
-        with cols[idx % 3]:
-            st.markdown('<div class="bookloop-card">', unsafe_allow_html=True)
-            if book.get("image_url"):
-                st.image(
-                    f"{API_URL}/uploads/books/{book['image_url']}",
-                    use_container_width=True,
-                )
-            else:
-                st.markdown('<div style="aspect-ratio:1; border-radius:10px; background:#e8f1f5; display:flex; align-items:center; justify-content:center; font-size:3rem;">📖</div>', unsafe_allow_html=True)
-                
-            st.subheader(book["title"])
-            st.caption(f"{book['author']} · {grade_label(book['target_class'])}")
-            st.markdown(f"**${book['price']:.2f}**")
-            
-            if st.button("💬 Chat with Seller", key=f"chat_btn_{book['id']}"):
-                if not st.session_state.get("token"):
-                    st.warning("Please log in on the main Home application page to message this student.")
-                else:
-                    # Send a standardized initial greeting message to open up a chat connection channel
-                    headers = {"Authorization": f"Bearer {st.session_state.token}"}
-                    init_msg = f"Hi! Is your book '{book['title']}' still available for a face-to-face handoff at school?"
-                    
-                    res = requests.post(
-                        f"{API_URL}/chat/send", 
-                        headers=headers, 
-                        params={"receiver_id": book["seller_id"], "book_id": book["id"], "message": init_msg}
-                    )
-                    
-                    if res.status_code == 200:
-                        st.success("✅ Chat stream opened! Head over to the Chat page in the sidebar to talk.")
-                    else:
-                        st.error("Failed to start conversation thread.")
-            st.markdown('</div>', unsafe_allow_html=True)
-        idx += 1
+    for index, book in enumerate(visible_books):
+        image_url = book.get("image_url")
+        image_markup = (
+            f'<img src="{escape(API_URL)}/uploads/books/{escape(str(image_url))}" '
+            f'alt="{escape(str(book.get("title", "Book cover")))}" />'
+            if image_url
+            else '<div class="bookloop-listing-placeholder" aria-label="No book photo">📖</div>'
+        )
+        title = escape(str(book.get("title", "Untitled")))
+        author = escape(str(book.get("author", "Unknown")))
+        target_class = escape(grade_label(book.get("target_class", "Class 1")))
+        try:
+            price = f"${float(book.get('price', 0)):.2f}"
+        except (TypeError, ValueError):
+            price = "Price unavailable"
 
-    if idx == 0:
+        with cols[index % len(cols)]:
+            st.markdown(
+                f'<a class="bookloop-listing-card" href="/product?book_id={int(book["id"])}">'
+                f'{image_markup}<div class="bookloop-listing-copy">'
+                f'<h3>{title}</h3><p>{author} · {target_class}</p>'
+                f'<strong>{price}</strong></div></a>',
+                unsafe_allow_html=True,
+            )
+
+    if not visible_books:
         st.info("No books match those filters yet. Try another search or list the first one.")
