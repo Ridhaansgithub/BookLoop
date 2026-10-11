@@ -13,6 +13,10 @@ import database
 import auth
 
 router = APIRouter(tags=["Books"])
+BOOKLOOP_APP_URL = os.getenv(
+    "BOOKLOOP_APP_URL",
+    "https://bookloop.streamlit.app",
+).rstrip("/")
 
 UPLOAD_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -203,7 +207,7 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
 
     photo = (
         f"<img src='/uploads/books/{escape(book.image_url, quote=True)}' "
-        f"alt='Cover of {escape(book.title, quote=True)}'>"
+        "alt='Book cover photo'>"
         if book.image_url
         else "<div class='photo-placeholder' role='img' aria-label='No book photo'>"
         "📖</div>"
@@ -220,7 +224,10 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
       background: linear-gradient(145deg,#fbfcfe 0%,#f1f6fb 58%,#fdf8f4 100%);
       font: 16px/1.5 system-ui,-apple-system,sans-serif; }}
     main {{ max-width: 1100px; margin: 0 auto; }}
-    .back {{ display: inline-block; margin-bottom: 1.25rem; color: #315d43; }}
+    .back {{ display: inline-block; margin-bottom: 1.25rem; padding: .55rem .85rem;
+      border: 1px solid #dfe7ec; border-radius: 8px; background: #fff;
+      color: #315d43; font-weight: 600; text-decoration: none; }}
+    .back:hover {{ background: #edf4ef; }}
     .product {{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
       gap: 2rem; align-items: start; padding: 1.25rem; border: 1px solid #dfe7ec;
       border-radius: 16px; background: #fff; box-shadow: 0 8px 24px #101c3b0d; }}
@@ -244,7 +251,7 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
   </style>
 </head>
 <body><main>
-  <a class="back" href="javascript:history.back()">← Back to listings</a>
+  <a class="back" href="{escape(BOOKLOOP_APP_URL, quote=True)}">← Back to listings</a>
   <section class="product">
     <div class="photo">{photo}</div>
     <div>

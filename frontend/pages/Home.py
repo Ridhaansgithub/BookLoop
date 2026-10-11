@@ -61,9 +61,11 @@ else:
         image_url = book.get("image_url")
         image_markup = (
             f'<img src="{escape(API_URL)}/uploads/books/{escape(str(image_url))}" '
-            f'alt="{escape(str(book.get("title", "Book cover")))}" />'
+            'alt="Book cover" '
+            'style="display:block;width:100%;height:100%;object-fit:cover;" />'
             if image_url
-            else '<div class="bookloop-listing-placeholder" aria-label="No book photo">📖</div>'
+            else '<div aria-label="No book photo" style="display:grid;width:100%;'
+            'height:100%;place-items:center;background:#e8f1f5;font-size:3rem;">📖</div>'
         )
         title = escape(str(book.get("title", "Untitled")))
         author = escape(str(book.get("author", "Unknown")))
@@ -75,10 +77,21 @@ else:
 
         with cols[index % len(cols)]:
             st.markdown(
-                f'<a class="bookloop-listing-card" href="{escape(API_URL)}/book/{int(book["id"])}">'
-                f'{image_markup}<div class="bookloop-listing-copy">'
-                f'<h3>{title}</h3><p>{author} · {target_class}</p>'
-                f'<strong>{price}</strong></div></a>',
+                f'<a class="bookloop-listing-card" href="{escape(API_URL)}/book/{int(book["id"])}" '
+                'style="display:block;height:100%;overflow:hidden;color:#0f172a;'
+                'background:#fff;border:1px solid #dfe7ec;border-radius:14px;'
+                'box-shadow:0 8px 24px rgba(16,28,59,.08);text-decoration:none;'
+                'transition:transform .15s ease,box-shadow .15s ease;">'
+                f'<div style="width:100%;aspect-ratio:4/3;max-height:260px;'
+                f'overflow:hidden;background:#e8f1f5;">'
+                f'{image_markup}</div>'
+                '<div style="padding:1rem 1.1rem 1.1rem;">'
+                f'<h3 style="margin:0 0 .4rem;font-size:1.15rem;line-height:1.3;'
+                f'color:#0f172a;overflow-wrap:anywhere;">{title}</h3>'
+                f'<p style="margin:0 0 .85rem;color:#53657a;font-size:.95rem;">'
+                f'{author} · {target_class}</p>'
+                f'<strong style="font-size:1.05rem;color:#0f172a;">{price}</strong>'
+                '</div></a>',
                 unsafe_allow_html=True,
             )
 
