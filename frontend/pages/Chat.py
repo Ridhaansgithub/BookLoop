@@ -8,6 +8,57 @@ if not st.session_state.get("token"):
     st.error("🔒 Please log in on the main app screen to access your conversations.")
 else:
     headers = {"Authorization": f"Bearer {st.session_state.token}"}
+
+    book_id_param = st.query_params.get("book_id")
+    partner_id_param = st.query_params.get("partner_id")
+    if book_id_param is not None or partner_id_param is not None:
+        if "book_id" in st.query_params:
+            del st.query_params["book_id"]
+        if "partner_id" in st.query_params:
+            del st.query_params["partner_id"]
+
+        try:
+            book_id = int(book_id_param)
+            partner_id = int(partner_id_param)
+            if book_id < 1 or partner_id < 1:
+                raise ValueError
+        except (TypeError, ValueError):
+            st.error("This chat link is invalid. Return to the listing and try again.")
+            st.stop()
+
+        try:
+            history_response = requests.get(
+                f"{API_URL}/chat/history/{book_id}/{partner_id}",
+                headers=headers,
+                timeout=10,
+            )
+            if not history_response.ok:
+                raise requests.HTTPError(
+                    f"Could not load the conversation ({history_response.status_code})."
+                )
+            history = history_response.json()
+            if not history:
+                start_response = requests.post(
+                    f"{API_URL}/chat/send",
+                    headers=headers,
+                    params={
+                        "receiver_id": partner_id,
+                        "book_id": book_id,
+                        "message": (
+                            "Hi! I'm interested in this book. Is it still "
+                            "available for a handoff at school?"
+                        ),
+                    },
+                    timeout=10,
+                )
+                if not start_response.ok:
+                    raise requests.HTTPError(
+                        f"Could not start the conversation ({start_response.status_code})."
+                    )
+            st.session_state.chat_context = (book_id, partner_id)
+        except (requests.RequestException, ValueError) as error:
+            st.error(f"Could not open this conversation: {error}")
+            st.stop()
     
     try:
         response = requests.get(f"{API_URL}/chat/channels", headers=headers, timeout=10)
@@ -29,7 +80,27 @@ else:
         st.info("No open chats yet. Open a book listing and select 'Chat with Seller' on its details page.")
     else:
         options = [f"📚 {c['book_title']} (Classmate: {c['partner_name']})" for c in channels]
-        selected_idx = st.selectbox("Select an Active Conversation Stream:", range(len(options)), format_func=lambda x: options[x])
+        chat_context = st.session_state.pop("chat_context", None)
+        if chat_context:
+            context_book_id, context_partner_id = chat_context
+            preferred_index = next(
+                (
+                    index
+                    for index, channel in enumerate(channels)
+                    if channel.get("book_id") == context_book_id
+                    and channel.get("partner_id") == context_partner_id
+                ),
+                0,
+            )
+            st.session_state.active_chat_index = preferred_index
+
+        selected_idx = st.selectbox(
+            "Select an Active Conversation Stream:",
+            range(len(options)),
+            index=st.session_state.get("active_chat_index", 0),
+            format_func=lambda x: options[x],
+            key="active_chat_index",
+        )
         
         active_channel = channels[selected_idx]
         

@@ -277,6 +277,12 @@ def main() -> None:
     if st.session_state.token:
         pages = [
             st.Page(page_path("Home.py"), title="Home", icon="🏠"),
+            st.Page(
+                page_path("ProductDetail.py"),
+                title="Book details",
+                icon="📖",
+                visibility="hidden",
+            ),
             st.Page(page_path("MyListings.py"), title="My Listings", icon="📚"),
             st.Page(page_path("SellBook.py"), title="Sell Book", icon="💰"),
             st.Page(page_path("Chat.py"), title="Chat", icon="💬"),
