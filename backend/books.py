@@ -326,16 +326,26 @@ def delete_book(
     if book.seller_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    image_path = None
     if book.image_url:
         db.query(models.BookImage).filter(
             models.BookImage.filename == book.image_url
         ).delete()
-        image_path = os.path.join(UPLOAD_DIR, book.image_url)
+        image_filename = os.path.basename(
+            str(book.image_url).replace("\\", "/")
+        )
+        image_path = os.path.join(UPLOAD_DIR, image_filename)
 
-        if os.path.exists(image_path):
-            os.remove(image_path)
-
+    db.query(models.BookPurchase).filter(
+        models.BookPurchase.book_id == book.id
+    ).delete(synchronize_session=False)
+    db.query(models.ChatMessage).filter(
+        models.ChatMessage.book_id == book.id
+    ).delete(synchronize_session=False)
     db.delete(book)
     db.commit()
+
+    if image_path and os.path.isfile(image_path):
+        os.remove(image_path)
 
     return {"message": "Book deleted successfully"}
