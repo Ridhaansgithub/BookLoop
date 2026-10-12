@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from frontend.config import API_URL
+from frontend.config import API_URL, book_image_url
 
 st.header("📋 Manage My Book Listings")
 
@@ -46,11 +46,11 @@ else:
             col1, col2, col3 = st.columns([1, 2, 1.5])
 
             with col1:
-                image_url = book.get("image_url")
+                image_url = book_image_url(book.get("image_url"))
 
                 if image_url:
                     st.image(
-                        f"{API_URL}/uploads/books/{image_url}",
+                        image_url,
                         width=120,
                     )
                 else:

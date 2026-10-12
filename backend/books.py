@@ -205,10 +205,15 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
         for review in reviews
     ) or "<p class='muted'>This seller hasn't received any reviews yet.</p>"
 
-    photo = (
-        f"<img src='/uploads/books/{escape(book.image_url, quote=True)}' "
-        "alt='Book cover photo'>"
+    image_filename = (
+        os.path.basename(str(book.image_url).replace("\\", "/"))
         if book.image_url
+        else None
+    )
+    photo = (
+        f"<img src='/uploads/books/{escape(image_filename, quote=True)}' "
+        "alt='Book cover photo' loading='eager' decoding='async'>"
+        if image_filename
         else "<div class='photo-placeholder' role='img' aria-label='No book photo'>"
         "📖</div>"
     )
@@ -224,13 +229,13 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
       background: linear-gradient(145deg,#fbfcfe 0%,#f1f6fb 58%,#fdf8f4 100%);
       font: 16px/1.5 system-ui,-apple-system,sans-serif; }}
     main {{ max-width: 1100px; margin: 0 auto; }}
-    .back {{ display: inline-block; margin-bottom: 1.25rem; padding: .55rem .85rem;
-      border: 1px solid #dfe7ec; border-radius: 8px; background: #fff;
-      color: #315d43; font-weight: 600; text-decoration: none; }}
-    .back:hover {{ background: #edf4ef; }}
     .product {{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
       gap: 2rem; align-items: start; padding: 1.25rem; border: 1px solid #dfe7ec;
       border-radius: 16px; background: #fff; box-shadow: 0 8px 24px #101c3b0d; }}
+    .chat-link {{ display: inline-flex; margin-top: .75rem; padding: .7rem 1rem;
+      border-radius: 999px; background: #51755a; color: #fff;
+      font-weight: 700; text-decoration: none; }}
+    .chat-link:hover {{ background: #44664d; }}
     .photo {{ width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 12px;
       background: #e8f1f5; }}
     .photo img,.photo-placeholder {{ display: grid; width: 100%; height: 100%;
@@ -251,7 +256,6 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
   </style>
 </head>
 <body><main>
-  <a class="back" href="{escape(BOOKLOOP_APP_URL, quote=True)}">← Back to listings</a>
   <section class="product">
     <div class="photo">{photo}</div>
     <div>
@@ -261,6 +265,9 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
       <p class="price">${book.price:.2f}</p>
       <p><strong>Seller:</strong> {escape(seller.username)}</p>
       <p><strong>Seller rating:</strong> {f"{average_rating:.1f}" if average_rating else "No ratings yet"} / 5</p>
+      <a class="chat-link" href="{escape(f"{BOOKLOOP_APP_URL}/?start_chat_book_id={book.id}", quote=True)}">
+        💬 Chat with seller
+      </a>
     </div>
   </section>
   <section class="reviews">

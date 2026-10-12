@@ -3,7 +3,57 @@ from html import escape
 import requests
 import streamlit as st
 
-from frontend.config import API_URL, CATEGORY_OPTIONS, GRADE_OPTIONS, book_category, grade_label
+from frontend.config import API_URL, CATEGORY_OPTIONS, GRADE_OPTIONS, book_category, book_image_url, grade_label
+
+
+def start_chat_from_product_link() -> None:
+    book_id_text = st.query_params.get("start_chat_book_id")
+    if book_id_text is None:
+        return
+
+    del st.query_params["start_chat_book_id"]
+    try:
+        book_id = int(book_id_text)
+        if book_id < 1:
+            raise ValueError
+    except (TypeError, ValueError):
+        st.error("This chat link is invalid. Open the book listing and try again.")
+        return
+
+    token = st.session_state.get("token")
+    if not token:
+        st.error("Please log in to message the seller.")
+        return
+
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        book_response = requests.get(f"{API_URL}/books/{book_id}", timeout=10)
+        book_response.raise_for_status()
+        book = book_response.json()
+        if not isinstance(book, dict) or "seller_id" not in book:
+            raise ValueError("The listing returned invalid book details.")
+
+        chat_response = requests.post(
+            f"{API_URL}/chat/send",
+            headers=headers,
+            params={
+                "receiver_id": book["seller_id"],
+                "book_id": book_id,
+                "message": (
+                    f"Hi! Is your book '{book.get('title', 'book')}' still "
+                    "available for a face-to-face handoff at school?"
+                ),
+            },
+            timeout=10,
+        )
+        chat_response.raise_for_status()
+    except (requests.RequestException, ValueError) as error:
+        st.error(f"Could not start a conversation: {error}")
+    else:
+        st.success("Chat started. Open Chat in the sidebar to continue.")
+
+
+start_chat_from_product_link()
 
 st.markdown('<div class="bookloop-kicker">A better way to find your next book</div>', unsafe_allow_html=True)
 st.markdown('<h1>Find your <span style="color: #000000;">next chapter.</span></h1>', unsafe_allow_html=True)
@@ -58,10 +108,11 @@ else:
         visible_books.append(book)
 
     for index, book in enumerate(visible_books):
-        image_url = book.get("image_url")
+        image_url = book_image_url(book.get("image_url"))
         image_markup = (
-            f'<img src="{escape(API_URL)}/uploads/books/{escape(str(image_url))}" '
+            f'<img src="{escape(image_url, quote=True)}" '
             'alt="Book cover" '
+            'loading="lazy" decoding="async" '
             'style="display:block;width:100%;height:100%;object-fit:cover;" />'
             if image_url
             else '<div aria-label="No book photo" style="display:grid;width:100%;'

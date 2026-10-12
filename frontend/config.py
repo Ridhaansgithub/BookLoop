@@ -1,5 +1,6 @@
 import os
 import re
+from urllib.parse import quote
 
 
 API_URL = (
@@ -24,6 +25,15 @@ GRADE_OPTIONS = [
 ]
 
 CATEGORY_OPTIONS = ["SAT Prep", "ACT Prep", "AP Books", "College Textbooks"]
+
+
+def book_image_url(image_path: object) -> str | None:
+    if not image_path:
+        return None
+    filename = str(image_path).replace("\\", "/").rsplit("/", 1)[-1]
+    if not filename:
+        return None
+    return f"{API_URL}/uploads/books/{quote(filename, safe='')}"
 
 
 def book_category(book: dict) -> str:
