@@ -16,13 +16,17 @@ with st.form("sell_book_form"):
     price = st.number_input("Price ($)", min_value=0.0)
 
     uploaded_file = st.file_uploader(
-        "Upload Book Image (Optional)",
-        type=["jpg", "jpeg", "png"]
+        "Book Photo (Required)",
+        type=["jpg", "jpeg", "png"],
+        help="A clear photo of the book is required to create a listing.",
     )
 
     submit = st.form_submit_button("📤 List Book")
 
 if submit:
+    if uploaded_file is None:
+        st.error("Upload a book photo before creating the listing.")
+        st.stop()
 
     headers = {
         "Authorization": f"Bearer {st.session_state.token}"
@@ -35,14 +39,13 @@ if submit:
         "price": price
     }
 
-    files = {}
-
-    if uploaded_file is not None:
-        files["image"] = (
+    files = {
+        "image": (
             uploaded_file.name,
             uploaded_file,
             uploaded_file.type
         )
+    }
 
     response = requests.post(
         f"{API_URL}/books",

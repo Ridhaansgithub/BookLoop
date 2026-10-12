@@ -42,29 +42,26 @@ async def add_book(
     author: str = Form(...),
     target_class: str = Form(...),
     price: float = Form(...),
-    image: UploadFile = File(None),
+    image: UploadFile = File(...),
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    image_url = None
-
-    if image:
-        filename = f"{current_user.id}_{uuid4().hex}.jpg"
-        image_url = filename
-        db.add(
-            models.BookImage(
-                filename=filename,
-                image_data=normalize_book_image(image),
-                content_type="image/jpeg",
-            )
+    filename = f"{current_user.id}_{uuid4().hex}.jpg"
+    image_data = normalize_book_image(image)
+    db.add(
+        models.BookImage(
+            filename=filename,
+            image_data=image_data,
+            content_type="image/jpeg",
         )
+    )
 
     new_book = models.Book(
         title=title,
         author=author,
         target_class=target_class,
         price=price,
-        image_url=image_url,
+        image_url=filename,
         seller_id=current_user.id
     )
 
@@ -280,8 +277,7 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
 @router.put("/books/{book_id}/sold")
 def mark_book_sold(
     book_id: int,
-    buyer_username: str | None = None,
-    buyer_id: int | None = None,
+    buyer_username: str,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
@@ -295,29 +291,19 @@ def mark_book_sold(
     if book.seller_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    if buyer_username is not None and buyer_id is not None:
-        raise HTTPException(status_code=400, detail="Provide a buyer username or buyer ID, not both.")
+    if not buyer_username.strip():
+        raise HTTPException(status_code=400, detail="Buyer username is required.")
 
-    buyer = None
-    if buyer_username is not None:
-        buyer = db.query(models.User).filter(
-            models.User.username == buyer_username.strip()
-        ).first()
-        if not buyer:
-            raise HTTPException(status_code=404, detail="Buyer not found")
-        buyer_id = buyer.id
-    elif buyer_id is not None:
-        buyer = db.query(models.User).filter(models.User.id == buyer_id).first()
-        if not buyer:
-            raise HTTPException(status_code=404, detail="Buyer not found")
-
-    if buyer is not None:
-        if buyer.id == current_user.id:
-            raise HTTPException(status_code=400, detail="You cannot mark yourself as the buyer.")
+    buyer = db.query(models.User).filter(
+        models.User.username == buyer_username.strip()
+    ).first()
+    if not buyer:
+        raise HTTPException(status_code=404, detail="Buyer not found")
+    if buyer.id == current_user.id:
+        raise HTTPException(status_code=400, detail="You cannot mark yourself as the buyer.")
 
     book.status = "sold"
-    if buyer_id is not None:
-        db.add(models.BookPurchase(book_id=book.id, buyer_id=buyer_id))
+    db.add(models.BookPurchase(book_id=book.id, buyer_id=buyer.id))
 
     db.commit()
 

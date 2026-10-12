@@ -110,7 +110,7 @@ else:
 
                 if book.get("status") == "available":
                     buyer_username = st.text_input(
-                        "Buyer username (optional)",
+                        "Buyer username (required)",
                         key=f"buyer_username_{book['id']}",
                     )
                     if st.button(
@@ -118,19 +118,20 @@ else:
                         key=f"sold_{book['id']}",
                         use_container_width=True
                     ):
-                        res = requests.put(
-                            f"{API_URL}/books/{book['id']}/sold",
-                            headers=headers,
-                            params={"buyer_username": buyer_username.strip()}
-                            if buyer_username.strip()
-                            else None,
-                        )
-
-                        if res.status_code == 200:
-                            st.success("Status updated.")
-                            st.rerun()
+                        if not buyer_username.strip():
+                            st.error("Enter the buyer's username before marking this book as sold.")
                         else:
-                            st.error(res.text)
+                            res = requests.put(
+                                f"{API_URL}/books/{book['id']}/sold",
+                                headers=headers,
+                                params={"buyer_username": buyer_username.strip()},
+                            )
+
+                            if res.status_code == 200:
+                                st.success("Status updated.")
+                                st.rerun()
+                            else:
+                                st.error(res.text)
 
                 if st.button(
                     "🗑️ Delete Listing",
