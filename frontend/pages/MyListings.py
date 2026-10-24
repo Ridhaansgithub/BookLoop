@@ -15,6 +15,13 @@ headers = {
 try:
     response = requests.get(f"{API_URL}/books/me", headers=headers, timeout=10)
 
+    if response.status_code == 401:
+        st.session_state.token = None
+        st.session_state.username = None
+        st.session_state.user_id = None
+        st.session_state.auth_session_expired = True
+        st.rerun()
+
     if response.status_code != 200:
         st.error(
             f"Backend error ({response.status_code}): {response.text}"

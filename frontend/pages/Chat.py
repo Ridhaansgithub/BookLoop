@@ -2,6 +2,15 @@ import streamlit as st
 import requests
 from frontend.config import API_URL
 
+
+def expire_session() -> None:
+    st.session_state.token = None
+    st.session_state.username = None
+    st.session_state.user_id = None
+    st.session_state.auth_session_expired = True
+    st.rerun()
+
+
 st.header("Zuvyo Chat Messenger")
 
 if not st.session_state.get("token"):
@@ -32,6 +41,8 @@ else:
                 headers=headers,
                 timeout=10,
             )
+            if history_response.status_code == 401:
+                expire_session()
             if not history_response.ok:
                 raise requests.HTTPError(
                     f"Could not load the conversation ({history_response.status_code})."
@@ -51,6 +62,8 @@ else:
                     },
                     timeout=10,
                 )
+                if start_response.status_code == 401:
+                    expire_session()
                 if not start_response.ok:
                     raise requests.HTTPError(
                         f"Could not start the conversation ({start_response.status_code})."
@@ -62,6 +75,8 @@ else:
     
     try:
         response = requests.get(f"{API_URL}/chat/channels", headers=headers, timeout=10)
+        if response.status_code == 401:
+            expire_session()
         if not response.ok:
             try:
                 error_payload = response.json()
@@ -104,10 +119,17 @@ else:
         
         active_channel = channels[selected_idx]
         
-        history = requests.get(
+        history_response = requests.get(
             f"{API_URL}/chat/history/{active_channel['book_id']}/{active_channel['partner_id']}", 
-            headers=headers
-        ).json()
+            headers=headers,
+            timeout=10,
+        )
+        if history_response.status_code == 401:
+            expire_session()
+        if not history_response.ok:
+            st.error(f"Could not load this conversation ({history_response.status_code}).")
+            st.stop()
+        history = history_response.json()
         
         st.write("---")
         for msg in history:
@@ -121,7 +143,10 @@ else:
                 res = requests.post(
                     f"{API_URL}/chat/send", 
                     headers=headers, 
-                    params={"receiver_id": active_channel["partner_id"], "book_id": active_channel["book_id"], "message": reply_text}
+                    params={"receiver_id": active_channel["partner_id"], "book_id": active_channel["book_id"], "message": reply_text},
+                    timeout=10,
                 )
+                if res.status_code == 401:
+                    expire_session()
                 if res.status_code == 200:
                     st.rerun()

@@ -251,7 +251,7 @@ def main() -> None:
         st.session_state.registration_success_open = True
         st.session_state.auth_view = "Login"
 
-    _, logo_center, _ = st.columns([1, 3, 1])
+    _, logo_center, _ = st.columns([1, 4.5, 1])
     with logo_center:
         if os.path.exists(logo_path):
             st.image(logo_path, width="stretch")
@@ -263,6 +263,9 @@ def main() -> None:
                 '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
                 unsafe_allow_html=True,
             )
+
+    if st.session_state.pop("auth_session_expired", False):
+        st.warning("Your session has expired or is no longer valid. Please sign in again.")
 
     # Sidebar login status dashboard
     if st.session_state.token:

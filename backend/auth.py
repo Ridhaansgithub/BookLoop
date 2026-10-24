@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import bcrypt
 from jose import JWTError, jwt
@@ -30,10 +30,12 @@ def get_password_hash(password):
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+    token_lifetime = (
+        expires_delta
+        if expires_delta is not None
+        else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    expire = datetime.now(timezone.utc) + token_lifetime
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
