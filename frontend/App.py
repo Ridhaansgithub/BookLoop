@@ -251,7 +251,7 @@ def main() -> None:
         st.session_state.registration_success_open = True
         st.session_state.auth_view = "Login"
 
-    _, logo_center, _ = st.columns([1, 2, 1])
+    _, logo_center, _ = st.columns([1, 3, 1])
     with logo_center:
         if os.path.exists(logo_path):
             st.image(logo_path, width="stretch")
