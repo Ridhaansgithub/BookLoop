@@ -16,9 +16,9 @@ from pathlib import Path
 ENV_PATH = Path(__file__).parent.parent / ".env"
 if ENV_PATH.exists():
     load_dotenv(ENV_PATH)
-    print(f"✅ Loaded .env from {ENV_PATH}")
+    print(f"Loaded .env from {ENV_PATH}")
 else:
-    print(f"ℹ️  .env not found at {ENV_PATH} - using environment variables from system/Render")
+    print(f".env not found at {ENV_PATH} - using environment variables from system/Render")
     load_dotenv()  # Load from environment variables
 
 import models
@@ -33,9 +33,9 @@ import reviews
 try:
     models.Base.metadata.create_all(bind=database.engine)
 except OperationalError as error:
-    print(f"⚠️ Database unavailable during startup: {error}")
+    print(f"Database unavailable during startup: {error}")
     print("Check DATABASE_PUBLIC_URL, EXTERNAL_DATABASE_URL, or DATABASE_URL in Render.")
-app = FastAPI(title="BookLoop API")
+app = FastAPI(title="Zuvyo API")
 
 # Enable CORS so Streamlit Cloud can call this API
 app.add_middleware(

@@ -4,13 +4,13 @@ import streamlit as st
 import requests
 from frontend.config import API_URL
 
-st.header("👤 School Profiles & Trust Ratings")
+st.header("School Profiles & Trust Ratings")
 
 if not st.session_state.get("token"):
-    st.error("🔒 Please log in on the main screen to access profiles.")
+    st.error("Please log in on the main screen to access profiles.")
 else:
     headers = {"Authorization": f"Bearer {st.session_state.token}"}
-    tab1, tab2, tab3 = st.tabs(["My Profile Card", "⭐ Leave a Swap Review", "Classmate Book Counts"])
+    tab1, tab2, tab3 = st.tabs(["My Profile Card", "Leave a Swap Review", "Classmate Book Counts"])
     
     with tab1:
         try:
@@ -19,15 +19,15 @@ else:
                 timeout=10,
             ).json()
             st.subheader(f"Username: {profile['username']}")
-            st.write(f"🎒 **Registered Class/Year:** {profile['school_class']}")
-            st.markdown(f"### ⭐ Classmate Trust Score: **{profile['average_rating']} / 5.0**")
+            st.write(f"**Registered Class/Year:** {profile['school_class']}")
+            st.markdown(f"### Classmate Trust Score: **{profile['average_rating']} / 5.0**")
             count_col1, count_col2, count_col3 = st.columns(3)
             count_col1.metric("Listed", profile["books_listed"])
             count_col2.metric("Sold", profile["books_sold"])
             count_col3.metric("Bought", profile["books_bought"])
             
             st.write("---")
-            st.markdown("### 📝 Recent Feedback History")
+            st.markdown("### Recent Feedback History")
             if not profile["reviews"]:
                 st.info("No reviews received yet. Swap books face-to-face to build up your score!")
             else:

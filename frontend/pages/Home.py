@@ -76,7 +76,7 @@ else:
                     st.markdown(
                         '<div aria-label="No book photo" style="display:grid;width:100%;'
                         'aspect-ratio:4/3;place-items:center;background:#e8f1f5;'
-                        'font-size:3rem;">📖</div>',
+                        'font-size:1rem;">No photo</div>',
                         unsafe_allow_html=True,
                     )
                 st.subheader(title)

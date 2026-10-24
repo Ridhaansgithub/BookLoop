@@ -71,7 +71,7 @@ with image_column:
         st.markdown(
             '<div aria-label="No book photo" style="display:grid;width:100%;'
             'aspect-ratio:1;place-items:center;background:#e8f1f5;'
-            'font-size:4rem;">📖</div>',
+            'font-size:1rem;">No photo</div>',
             unsafe_allow_html=True,
         )
 
@@ -101,7 +101,7 @@ with details_column:
     else:
         st.page_link(
             os.path.join(os.path.dirname(__file__), "Chat.py"),
-            label="💬 Chat with Seller",
+            label="Chat with Seller",
             query_params={
                 "book_id": str(book_id),
                 "partner_id": str(seller_id),
@@ -116,7 +116,7 @@ if not reviews:
 else:
     for review in reviews:
         st.markdown(
-            f"**{review.get('reviewer_name', 'BookLoop user')}** · "
+            f"**{review.get('reviewer_name', 'Zuvyo user')}** · "
             f"{review.get('rating', 0)} / 5 stars"
         )
         if review.get("comment"):

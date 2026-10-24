@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from frontend.config import API_URL, GRADE_OPTIONS, grade_label
 
-st.title("📚 Sell a Book")
+st.title("Sell a Book")
 
 if not st.session_state.get("token"):
     st.error("Please log in first.")
@@ -21,7 +21,7 @@ with st.form("sell_book_form"):
         help="A clear photo of the book is required to create a listing.",
     )
 
-    submit = st.form_submit_button("📤 List Book")
+    submit = st.form_submit_button("List Book")
 
 if submit:
     if uploaded_file is None:
@@ -55,6 +55,6 @@ if submit:
     )
 
     if response.status_code in [200, 201]:
-        st.success("✅ Book listed successfully!")
+        st.success("Book listed successfully!")
     else:
         st.error(response.text)

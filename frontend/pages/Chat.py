@@ -2,10 +2,10 @@ import streamlit as st
 import requests
 from frontend.config import API_URL
 
-st.header("💬 BookLoop Chat Messenger")
+st.header("Zuvyo Chat Messenger")
 
 if not st.session_state.get("token"):
-    st.error("🔒 Please log in on the main app screen to access your conversations.")
+    st.error("Please log in on the main app screen to access your conversations.")
 else:
     headers = {"Authorization": f"Bearer {st.session_state.token}"}
 
@@ -79,7 +79,7 @@ else:
     if not channels:
         st.info("No open chats yet. Open a book listing and select 'Chat with Seller' on its details page.")
     else:
-        options = [f"📚 {c['book_title']} (Classmate: {c['partner_name']})" for c in channels]
+        options = [f"{c['book_title']} (Classmate: {c['partner_name']})" for c in channels]
         chat_context = st.session_state.pop("chat_context", None)
         if chat_context:
             context_book_id, context_partner_id = chat_context
@@ -111,7 +111,7 @@ else:
         
         st.write("---")
         for msg in history:
-            label = "🤝 **You**" if msg["sender_id"] == st.session_state.user_id else f"👤 **{active_channel['partner_name']}**"
+            label = "**You**" if msg["sender_id"] == st.session_state.user_id else f"**{active_channel['partner_name']}**"
             st.markdown(f"{label}: {msg['message']}")
             
         st.write("---")

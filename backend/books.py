@@ -212,14 +212,14 @@ def get_product_page(book_id: int, db: Session = Depends(database.get_db)):
         "alt='Book cover photo' loading='eager' decoding='async'>"
         if image_filename
         else "<div class='photo-placeholder' role='img' aria-label='No book photo'>"
-        "📖</div>"
+        "No photo</div>"
     )
     page = f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{escape(book.title)} | BookLoop</title>
+  <title>{escape(book.title)} | Zuvyo</title>
   <style>
     * {{ box-sizing: border-box; }}
     body {{ margin: 0; padding: 2rem; color: #0f172a;

@@ -2,10 +2,10 @@ import streamlit as st
 import requests
 from frontend.config import API_URL, book_image_url
 
-st.header("📋 Manage My Book Listings")
+st.header("Manage My Book Listings")
 
 if not st.session_state.get("token"):
-    st.error("🔒 Please log in first.")
+    st.error("Please log in first.")
     st.stop()
 
 headers = {
@@ -57,7 +57,7 @@ else:
                     st.markdown(
                         '<div style="width:120px; aspect-ratio:1; border-radius:10px; '
                         'background:#e8f1f5; display:flex; align-items:center; '
-                        'justify-content:center; font-size:2rem;">📖</div>',
+                        'justify-content:center; font-size:1rem;">No photo</div>',
                         unsafe_allow_html=True,
                     )
 
@@ -114,7 +114,7 @@ else:
                         key=f"buyer_username_{book['id']}",
                     )
                     if st.button(
-                        "🤝 Mark as Sold",
+                        "Mark as Sold",
                         key=f"sold_{book['id']}",
                         use_container_width=True
                     ):
@@ -134,7 +134,7 @@ else:
                                 st.error(res.text)
 
                 if st.button(
-                    "🗑️ Delete Listing",
+                    "Delete Listing",
                     key=f"delete_{book['id']}",
                     use_container_width=True
                 ):

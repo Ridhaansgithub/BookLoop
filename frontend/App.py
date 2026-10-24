@@ -47,10 +47,10 @@ def send_registration_otp(recipient: str, otp: str) -> None:
         raise RuntimeError("SMTP_USERNAME and APP_PASSWORD must be configured in Streamlit.")
 
     message = EmailMessage()
-    message["Subject"] = "Your BookLoop verification code"
+    message["Subject"] = "Your Zuvyo verification code"
     message["From"] = smtp_username
     message["To"] = recipient
-    message.set_content(f"Your BookLoop verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.")
+    message.set_content(f"Your Zuvyo verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.")
     smtp_connection = smtplib.SMTP_SSL if smtp_port == 465 else smtplib.SMTP
     with smtp_connection(smtp_host, smtp_port, timeout=15) as smtp:
         if smtp_port != 465:
@@ -65,7 +65,8 @@ def page_path(name: str) -> str:
 
 
 def main() -> None:
-    st.set_page_config(page_title="BookLoop | School book exchange", page_icon="📖", layout="wide")
+    logo_path = os.path.join(APP_DIR, "assets", "zuvyo-logo.png")
+    st.set_page_config(page_title="Zuvyo | School book exchange", page_icon=logo_path, layout="wide")
 
     st.markdown(
         """
@@ -250,15 +251,14 @@ def main() -> None:
         st.session_state.registration_success_open = True
         st.session_state.auth_view = "Login"
 
-    logo_path = os.path.join(APP_DIR, "assets", "bookloop-logo.png")
     if os.path.exists(logo_path):
         st.image(logo_path, use_container_width=False, width=520)
     else:
         st.markdown(
             '<div class="bookloop-brand">'
             '<span class="bookloop-mark"></span>'
-            '<div><div class="bookloop-wordmark">Book<span>Loop</span></div>'
-            '<div class="bookloop-tagline">BUY · SELL · SWAP · DONATE</div></div></div>',
+            '<div><div class="bookloop-wordmark">Zuvyo</div>'
+            '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
             unsafe_allow_html=True,
         )
 
@@ -276,17 +276,16 @@ def main() -> None:
     # Unified app navigation once authenticated; this ensures the Home and My Listings pages share the same session state.
     if st.session_state.token:
         pages = [
-            st.Page(page_path("Home.py"), title="Home", icon="🏠"),
+            st.Page(page_path("Home.py"), title="Home"),
             st.Page(
                 page_path("ProductDetail.py"),
                 title="Book details",
-                icon="📖",
                 visibility="hidden",
             ),
-            st.Page(page_path("MyListings.py"), title="My Listings", icon="📚"),
-            st.Page(page_path("SellBook.py"), title="Sell Book", icon="💰"),
-            st.Page(page_path("Chat.py"), title="Chat", icon="💬"),
-            st.Page(page_path("Profile.py"), title="Profile", icon="👤"),
+            st.Page(page_path("MyListings.py"), title="My Listings"),
+            st.Page(page_path("SellBook.py"), title="Sell Book"),
+            st.Page(page_path("Chat.py"), title="Chat"),
+            st.Page(page_path("Profile.py"), title="Profile"),
         ]
         pg = st.navigation(pages)
         pg.run()
