@@ -251,16 +251,18 @@ def main() -> None:
         st.session_state.registration_success_open = True
         st.session_state.auth_view = "Login"
 
-    if os.path.exists(logo_path):
-        st.image(logo_path, use_container_width=False, width=520)
-    else:
-        st.markdown(
-            '<div class="bookloop-brand">'
-            '<span class="bookloop-mark"></span>'
-            '<div><div class="bookloop-wordmark">Zuvyo</div>'
-            '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
-            unsafe_allow_html=True,
-        )
+    _, logo_center, _ = st.columns([1, 2, 1])
+    with logo_center:
+        if os.path.exists(logo_path):
+            st.image(logo_path, width="stretch")
+        else:
+            st.markdown(
+                '<div class="bookloop-brand">'
+                '<span class="bookloop-mark"></span>'
+                '<div><div class="bookloop-wordmark">Zuvyo</div>'
+                '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
+                unsafe_allow_html=True,
+            )
 
     # Sidebar login status dashboard
     if st.session_state.token:
