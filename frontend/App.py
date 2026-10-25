@@ -66,6 +66,7 @@ def page_path(name: str) -> str:
 
 def main() -> None:
     logo_path = os.path.join(APP_DIR, "assets", "zuvyo-logo.png")
+    header_logo_path = os.path.join(APP_DIR, "assets", "zuvyo-logo-header.png")
     st.set_page_config(page_title="Zuvyo | School book exchange", page_icon=logo_path, layout="wide")
 
     st.markdown(
@@ -181,9 +182,21 @@ def main() -> None:
         }
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
         .bookloop-hero h1 span { color: var(--bookloop-teal); }
-        .st-key-brand-header { display: flex; justify-content: center; margin: 0 auto .75rem; }
+        div[data-testid='stHorizontalBlock']:has(.st-key-brand-header) {
+            background: var(--bookloop-blue);
+            width: 100vw;
+            max-width: 100vw;
+            margin-left: calc(50% - 50vw);
+            padding: .6rem 0;
+            align-items: center;
+        }
+        .st-key-brand-header { display: flex; justify-content: center; width: 100%; margin: 0; }
         .st-key-brand-header [data-testid='stImage'] { display: flex; justify-content: center; }
-        .st-key-brand-header img { max-width: 100%; height: auto; mix-blend-mode: multiply; }
+        .st-key-brand-header img { max-width: 100%; height: auto; }
+        .st-key-brand-header .bookloop-mark:before,
+        .st-key-brand-header .bookloop-mark:after { background: #ffffff; }
+        .st-key-brand-header .bookloop-wordmark,
+        .st-key-brand-header .bookloop-tagline { color: #ffffff; }
         .bookloop-card { background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line); border-radius: 14px; padding: .85rem; height: 100%; box-shadow: 0 8px 24px rgba(16,28,59,.05); }
         div[class*='st-key-category_'] button {
             min-height: 5rem; border: 1px solid var(--bookloop-line); border-radius: 14px;
@@ -256,17 +269,17 @@ def main() -> None:
 
     _, logo_center, _ = st.columns([1, 4.5, 1])
     with logo_center:
-        if os.path.exists(logo_path):
-            with st.container(key="brand-header", horizontal_alignment="center"):
-                st.image(logo_path, width=560)
-        else:
-            st.markdown(
-                '<div class="bookloop-brand">'
-                '<span class="bookloop-mark"></span>'
-                '<div><div class="bookloop-wordmark">Zuvyo</div>'
-                '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
-                unsafe_allow_html=True,
-            )
+        with st.container(key="brand-header", horizontal_alignment="center"):
+            if os.path.exists(header_logo_path):
+                st.image(header_logo_path, width=560)
+            else:
+                st.markdown(
+                    '<div class="bookloop-brand">'
+                    '<span class="bookloop-mark"></span>'
+                    '<div><div class="bookloop-wordmark">Zuvyo</div>'
+                    '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
+                    unsafe_allow_html=True,
+                )
 
     if st.session_state.pop("auth_session_expired", False):
         st.warning("Your session has expired or is no longer valid. Please sign in again.")
