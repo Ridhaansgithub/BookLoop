@@ -91,21 +91,57 @@ def main() -> None:
             font-family: 'DM Sans', sans-serif;
         }
 
-        [data-testid='stHeader'] { background: transparent; }
+        [data-testid='stHeader'] {
+            background: var(--bookloop-blue);
+            color: #ffffff;
+        }
+        [data-testid='stHeader'] button,
+        [data-testid='stHeader'] button svg,
+        [data-testid='stToolbar'] button,
+        [data-testid='stToolbar'] button svg {
+            color: #ffffff;
+            fill: #ffffff;
+        }
         [data-testid='stAppViewContainer'] p, [data-testid='stAppViewContainer'] label,
         [data-testid='stAppViewContainer'] .stMarkdown, [data-testid='stAppViewContainer'] .stCaption {
             color: var(--bookloop-ink);
         }
         [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: #425467; }
         [data-testid='stSidebar'] {
-            background: #142b4d;
+            background: var(--bookloop-blue);
             border-right: 0;
         }
-        [data-testid='stSidebar'] * { color: #f7f8f4; }
         [data-testid='stSidebarNav'] a,
-        [data-testid='stSidebarNav'] a span {
+        [data-testid='stSidebarNav'] a span,
+        [data-testid='stSidebarNav'] a p,
+        [data-testid='stSidebarNav'] a div {
             color: #ffffff !important;
             font-size: calc(1rem + 5px) !important;
+        }
+        [data-testid='stSidebarNav'] [aria-current='page'] {
+            background: #24466f !important;
+        }
+        [data-testid='stSidebarNav'] [aria-current='page'] * {
+            color: #ffffff !important;
+        }
+        [data-testid='stSidebar'] [data-testid='stAlert'] {
+            background: #1b3b64;
+            border: 1px solid #34577f;
+        }
+        [data-testid='stSidebar'] [data-testid='stAlert'] * {
+            color: #ffffff !important;
+        }
+        [data-testid='stSidebar'] .stButton > button {
+            background: #244a78;
+            border: 1px solid #6d94c2;
+            color: #ffffff;
+        }
+        [data-testid='stSidebar'] .stButton > button:hover {
+            background: #315d90;
+            border-color: #a3c0df;
+        }
+        [data-testid='stSidebar'] .stButton > button p {
+            color: #ffffff !important;
         }
         h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: 0; }
         h1 { color: var(--bookloop-ink); font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.05; }
@@ -182,16 +218,14 @@ def main() -> None:
         }
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
         .bookloop-hero h1 span { color: var(--bookloop-teal); }
-        div[data-testid='stHorizontalBlock']:has(.st-key-brand-header) {
+        .st-key-brand-header {
             background: var(--bookloop-blue);
-            width: 100vw;
-            max-width: 100vw;
-            margin-left: calc(50% - 50vw);
-            padding: .6rem 0;
-            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+            padding: .6rem 1.5rem;
+            margin: 0;
         }
-        .st-key-brand-header { display: flex; justify-content: center; width: 100%; margin: 0; }
-        .st-key-brand-header [data-testid='stImage'] { display: flex; justify-content: center; }
+        .st-key-brand-header [data-testid='stImage'] { display: flex; justify-content: flex-start; }
         .st-key-brand-header img { max-width: 100%; height: auto; }
         .st-key-brand-header .bookloop-mark:before,
         .st-key-brand-header .bookloop-mark:after { background: #ffffff; }
@@ -267,19 +301,17 @@ def main() -> None:
         st.session_state.registration_success_open = True
         st.session_state.auth_view = "Login"
 
-    _, logo_center, _ = st.columns([1, 4.5, 1])
-    with logo_center:
-        with st.container(key="brand-header", horizontal_alignment="center"):
-            if os.path.exists(header_logo_path):
-                st.image(header_logo_path, width=560)
-            else:
-                st.markdown(
-                    '<div class="bookloop-brand">'
-                    '<span class="bookloop-mark"></span>'
-                    '<div><div class="bookloop-wordmark">Zuvyo</div>'
-                    '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
-                    unsafe_allow_html=True,
-                )
+    with st.container(key="brand-header", horizontal_alignment="left"):
+        if os.path.exists(header_logo_path):
+            st.image(header_logo_path, width=780)
+        else:
+            st.markdown(
+                '<div class="bookloop-brand">'
+                '<span class="bookloop-mark"></span>'
+                '<div><div class="bookloop-wordmark">Zuvyo</div>'
+                '<div class="bookloop-tagline">Every Book Deserves Another Chapter.</div></div></div>',
+                unsafe_allow_html=True,
+            )
 
     if st.session_state.pop("auth_session_expired", False):
         st.warning("Your session has expired or is no longer valid. Please sign in again.")
