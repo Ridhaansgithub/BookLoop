@@ -122,10 +122,23 @@ def main() -> None:
             background: var(--bookloop-blue);
             border-right: 0;
         }
-        [data-testid='stSidebarNav'] a,
-        [data-testid='stSidebarNav'] a * {
+        [data-testid='stSidebarContent'] {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        [data-testid='stSidebarNav'] [data-testid='stSidebarNavLinkContainer'] {
+            margin: .35rem 0;
+        }
+        [data-testid='stSidebarNav'] [data-testid='stSidebarNavLink'] {
+            min-height: 3rem;
+            padding: .65rem .75rem;
+            border-radius: 8px;
+        }
+        [data-testid='stSidebarNav'] [data-testid='stSidebarNavLink'],
+        [data-testid='stSidebarNav'] [data-testid='stSidebarNavLink'] * {
             color: #ffffff !important;
-            font-size: calc(1rem + 5px) !important;
+            font-size: 1.1rem !important;
         }
         [data-testid='stSidebarNav'] [aria-current='page'] {
             background: #24466f !important;
@@ -133,6 +146,17 @@ def main() -> None:
         [data-testid='stSidebarNav'] [aria-current='page'] * {
             color: #ffffff !important;
         }
+        [data-testid='stSidebarUserContent'] {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+        }
+        [data-testid='stSidebarUserContent'] > div {
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+        }
+        .st-key-sidebar-account { margin-top: auto; padding-bottom: 1.25rem; }
         [data-testid='stSidebar'] [data-testid='stAlert'] {
             background: #1b3b64;
             border: 1px solid #34577f;
@@ -235,7 +259,7 @@ def main() -> None:
             isolation: isolate;
             padding: .5rem 1.5rem;
             margin: 0;
-            text-align: left;
+            text-align: center;
         }
         .st-key-brand-header:before {
             content: '';
@@ -246,9 +270,12 @@ def main() -> None:
             left: 50%;
             width: 100vw;
             transform: translateX(-50%);
-            background: var(--bookloop-blue);
+            background: #244a78;
+            border: 2px solid #8bb0d7;
+            border-radius: 14px;
+            box-sizing: border-box;
         }
-        .st-key-brand-header [data-testid='stImage'] { display: flex; justify-content: flex-start; }
+        .st-key-brand-header [data-testid='stImage'] { display: flex; justify-content: center; }
         .st-key-brand-header img { display: block; max-width: 100%; height: auto; margin: 0; }
         .st-key-brand-header .bookloop-mark:before,
         .st-key-brand-header .bookloop-mark:after { background: #ffffff; }
@@ -324,9 +351,9 @@ def main() -> None:
         st.session_state.registration_success_open = True
         st.session_state.auth_view = "Login"
 
-    with st.container(key="brand-header", horizontal_alignment="left"):
+    with st.container(key="brand-header", horizontal_alignment="center"):
         if os.path.exists(header_logo_path):
-            st.image(header_logo_path, width=760)
+            st.image(header_logo_path, width=620)
         else:
             st.markdown(
                 '<div class="bookloop-brand">'
@@ -340,15 +367,16 @@ def main() -> None:
         st.warning("Your session has expired or is no longer valid. Please sign in again.")
 
     # Sidebar login status dashboard
-    if st.session_state.token:
-        st.sidebar.success(f"Logged in as: {st.session_state.username}")
-        if st.sidebar.button("Log Out"):
-            st.session_state.token = None
-            st.session_state.username = None
-            st.session_state.user_id = None
-            st.rerun()
-    else:
-        st.sidebar.info("Please login or register to start swapping books!")
+    with st.sidebar.container(key="sidebar-account"):
+        if st.session_state.token:
+            st.success(f"Logged in as: {st.session_state.username}")
+            if st.button("Log Out"):
+                st.session_state.token = None
+                st.session_state.username = None
+                st.session_state.user_id = None
+                st.rerun()
+        else:
+            st.info("Please login or register to start swapping books!")
 
     # Unified app navigation once authenticated; this ensures the Home and My Listings pages share the same session state.
     if st.session_state.token:
