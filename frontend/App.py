@@ -272,6 +272,7 @@ def main() -> None:
             transform: translateX(-50%);
             background: #244a78;
             border: 2px solid #8bb0d7;
+            border-top: 0;
             border-radius: 14px;
             box-sizing: border-box;
         }
