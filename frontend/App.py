@@ -101,7 +101,7 @@ def main() -> None:
         [data-testid='stHeader'],
         [data-testid='stToolbar'],
         [data-testid='stDecoration'] {
-            background-color: var(--bookloop-blue) !important;
+            background-color: #244a78 !important;
             color: #ffffff !important;
         }
         [data-testid='stHeader'] > div,
