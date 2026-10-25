@@ -67,7 +67,7 @@ def page_path(name: str) -> str:
 def main() -> None:
     logo_path = os.path.join(APP_DIR, "assets", "zuvyo-logo.png")
     header_logo_path = os.path.join(APP_DIR, "assets", "zuvyo-logo-header.png")
-    st.set_page_config(page_title="Zuvyo | School book exchange", page_icon=logo_path, layout="wide")
+    st.set_page_config(page_title="Zuvyqo | School book exchange", page_icon=logo_path, layout="wide")
 
     st.markdown(
         """

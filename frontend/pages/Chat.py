@@ -11,7 +11,7 @@ def expire_session() -> None:
     st.rerun()
 
 
-st.header("Zuvyo Chat Messenger")
+st.header("Zuvyqo Chat Messenger")
 
 if not st.session_state.get("token"):
     st.error("Please log in on the main app screen to access your conversations.")
