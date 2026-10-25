@@ -90,17 +90,28 @@ def main() -> None:
             color: var(--bookloop-ink);
             font-family: 'DM Sans', sans-serif;
         }
-
-        [data-testid='stHeader'] {
-            background: var(--bookloop-blue);
-            color: #ffffff;
+        [data-testid='stMainBlockContainer'] {
+            box-sizing: border-box;
+            width: 100%;
+            max-width: none !important;
+            padding: 44px clamp(1rem, 3vw, 3rem) 4rem !important;
         }
+
+        header,
+        [data-testid='stHeader'],
+        [data-testid='stToolbar'],
+        [data-testid='stDecoration'] {
+            background-color: var(--bookloop-blue) !important;
+            color: #ffffff !important;
+        }
+        [data-testid='stHeader'] > div,
+        [data-testid='stToolbar'] > div { background-color: transparent !important; }
         [data-testid='stHeader'] button,
-        [data-testid='stHeader'] button svg,
+        [data-testid='stHeader'] button *,
         [data-testid='stToolbar'] button,
-        [data-testid='stToolbar'] button svg {
-            color: #ffffff;
-            fill: #ffffff;
+        [data-testid='stToolbar'] button * {
+            color: #ffffff !important;
+            fill: #ffffff !important;
         }
         [data-testid='stAppViewContainer'] p, [data-testid='stAppViewContainer'] label,
         [data-testid='stAppViewContainer'] .stMarkdown, [data-testid='stAppViewContainer'] .stCaption {
@@ -112,9 +123,7 @@ def main() -> None:
             border-right: 0;
         }
         [data-testid='stSidebarNav'] a,
-        [data-testid='stSidebarNav'] a span,
-        [data-testid='stSidebarNav'] a p,
-        [data-testid='stSidebarNav'] a div {
+        [data-testid='stSidebarNav'] a * {
             color: #ffffff !important;
             font-size: calc(1rem + 5px) !important;
         }
@@ -129,6 +138,9 @@ def main() -> None:
             border: 1px solid #34577f;
         }
         [data-testid='stSidebar'] [data-testid='stAlert'] * {
+            color: #ffffff !important;
+        }
+        [data-testid='stSidebar'] [data-testid='stAlert'] [data-testid='stMarkdownContainer'] {
             color: #ffffff !important;
         }
         [data-testid='stSidebar'] .stButton > button {
@@ -209,24 +221,35 @@ def main() -> None:
         .bookloop-wordmark { color: var(--bookloop-blue); font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
         .bookloop-wordmark span { color: var(--bookloop-teal); }
         .bookloop-tagline { color: var(--bookloop-muted); font-size: .62rem; letter-spacing: .08em; margin-top: .25rem; }
-        .bookloop-hero {
+        .st-key-bookloop-hero {
             background: linear-gradient(105deg, #f5f8fc 0%, #f1f7f2 100%);
             border-radius: 0 0 26px 26px;
             padding: 1rem 2.3rem 1.8rem;
             border: 1px solid #edf2f5;
             margin-top: 0;
         }
-        .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
-        .bookloop-hero h1 span { color: var(--bookloop-teal); }
+        .st-key-bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
+        .st-key-bookloop-hero h1 span { color: var(--bookloop-teal); }
         .st-key-brand-header {
-            background: var(--bookloop-blue);
-            box-sizing: border-box;
-            width: 100%;
-            padding: .6rem 1.5rem;
+            position: relative;
+            isolation: isolate;
+            padding: .5rem 1.5rem;
             margin: 0;
+            text-align: left;
+        }
+        .st-key-brand-header:before {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 100vw;
+            transform: translateX(-50%);
+            background: var(--bookloop-blue);
         }
         .st-key-brand-header [data-testid='stImage'] { display: flex; justify-content: flex-start; }
-        .st-key-brand-header img { max-width: 100%; height: auto; }
+        .st-key-brand-header img { display: block; max-width: 100%; height: auto; margin: 0; }
         .st-key-brand-header .bookloop-mark:before,
         .st-key-brand-header .bookloop-mark:after { background: #ffffff; }
         .st-key-brand-header .bookloop-wordmark,
@@ -303,7 +326,7 @@ def main() -> None:
 
     with st.container(key="brand-header", horizontal_alignment="left"):
         if os.path.exists(header_logo_path):
-            st.image(header_logo_path, width=780)
+            st.image(header_logo_path, width=760)
         else:
             st.markdown(
                 '<div class="bookloop-brand">'
@@ -344,10 +367,9 @@ def main() -> None:
         pg = st.navigation(pages)
         pg.run()
     else:
-        st.markdown('<div class="bookloop-hero">', unsafe_allow_html=True)
-        st.markdown('<h1><span style="font-weight: 700;">Textbooks</span> find their <span>next chapter.</span></h1>', unsafe_allow_html=True)
-        st.markdown('<div class="bookloop-intro">Buy, sell, swap, or donate academic books. Save money, support students, and keep good books moving.</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(key="bookloop-hero"):
+            st.markdown('<h1><span style="font-weight: 700;">Textbooks</span> find their <span>next chapter.</span></h1>', unsafe_allow_html=True)
+            st.markdown('<div class="bookloop-intro">Buy, sell, swap, or donate academic books. Save money, support students, and keep good books moving.</div>', unsafe_allow_html=True)
 
         # Auth Interface (Only shows up if student is not logged in)
         st.radio(
