@@ -74,14 +74,14 @@ def main() -> None:
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 
         :root {
-            --bookloop-ink: #0f172a;
+            --bookloop-ink: #142b4d;
             --bookloop-muted: #53657a;
             --bookloop-paper: #f7f9fc;
             --bookloop-line: #dfe7ec;
-            --bookloop-teal: #6ca58a;
-            --bookloop-coral: #6ca58a;
-            --bookloop-blue: #0f172a;
-            --bookloop-soft-green: #edf4ef;
+            --bookloop-teal: #41966f;
+            --bookloop-coral: #e9782a;
+            --bookloop-blue: #142b4d;
+            --bookloop-soft-green: #edf5ef;
         }
 
         .stApp {
@@ -97,7 +97,7 @@ def main() -> None:
         }
         [data-testid='stAppViewContainer'] [data-testid='stCaptionContainer'] { color: #425467; }
         [data-testid='stSidebar'] {
-            background: #51755A;
+            background: #142b4d;
             border-right: 0;
         }
         [data-testid='stSidebar'] * { color: #f7f8f4; }
@@ -126,12 +126,12 @@ def main() -> None:
         [data-testid='stTextInput'] input:focus, [data-testid='stTextArea'] textarea:focus,
         [data-testid='stSelectbox'] [role='combobox']:focus-visible {
             border-color: var(--bookloop-teal);
-            box-shadow: 0 0 0 2px rgba(81, 117, 90, .2);
+            box-shadow: 0 0 0 2px rgba(65, 150, 111, .2);
         }
         .stButton > button, [data-testid='stFormSubmitButton'] button {
             border: 0;
             border-radius: 999px;
-            background: #51755A;
+            background: #41966f;
             color: white;
             font-family: 'DM Sans', sans-serif;
             font-weight: 700;
@@ -140,7 +140,7 @@ def main() -> None:
             transition: transform .15s ease, background .15s ease;
         }
         .stButton > button:hover, [data-testid='stFormSubmitButton'] button:hover {
-            background: #44664d;
+            background: #347a59;
             transform: translateY(-1px);
         }
         [data-baseweb='tab-list'] { gap: 1.5rem; border-bottom: 1px solid var(--bookloop-line); }
@@ -153,7 +153,7 @@ def main() -> None:
         .registration-success { text-align: center; padding: .8rem .3rem 1.2rem; }
         .success-checkmark {
             width: 4.5rem; height: 4.5rem; margin: 0 auto 1rem; border-radius: 50%;
-            display: grid; place-items: center; background: #e4f5f3; color: #087f65;
+            display: grid; place-items: center; background: var(--bookloop-soft-green); color: var(--bookloop-teal);
             font-size: 2.8rem; font-weight: 700; animation: check-pop .55s cubic-bezier(.2, .8, .2, 1) both;
         }
         @keyframes check-pop {
@@ -167,20 +167,23 @@ def main() -> None:
         .bookloop-brand { display: flex; align-items: center; gap: .7rem; margin: .2rem 0 2.2rem; }
         .bookloop-mark { width: 2.35rem; height: 2rem; position: relative; display: inline-block; }
         .bookloop-mark:before, .bookloop-mark:after { content: ''; position: absolute; top: .12rem; width: 1rem; height: 1.75rem; background: var(--bookloop-blue); border-radius: .15rem .5rem .15rem .15rem; transform: skewY(-7deg); }
-        .bookloop-mark:before { left: .1rem; border-right: .18rem solid #24a0a0; }
-        .bookloop-mark:after { right: .1rem; transform: skewY(7deg); border-left: .18rem solid #24a0a0; }
+        .bookloop-mark:before { left: .1rem; border-right: .18rem solid var(--bookloop-coral); }
+        .bookloop-mark:after { right: .1rem; transform: skewY(7deg); border-left: .18rem solid var(--bookloop-coral); }
         .bookloop-wordmark { color: var(--bookloop-blue); font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; font-weight: 700; letter-spacing: -.04em; line-height: 1; }
         .bookloop-wordmark span { color: var(--bookloop-teal); }
         .bookloop-tagline { color: var(--bookloop-muted); font-size: .62rem; letter-spacing: .08em; margin-top: .25rem; }
         .bookloop-hero {
-            background: linear-gradient(105deg, #f8fbff 0%, #f4faf6 100%);
+            background: linear-gradient(105deg, #f5f8fc 0%, #f1f7f2 100%);
             border-radius: 0 0 26px 26px;
             padding: 1rem 2.3rem 1.8rem;
             border: 1px solid #edf2f5;
             margin-top: 0;
         }
         .bookloop-hero h1 { max-width: 40rem; font-size: clamp(2.6rem, 5vw, 4.7rem); margin: .5rem 0 1rem; }
-        .bookloop-hero h1 span { color: #51755A; }
+        .bookloop-hero h1 span { color: var(--bookloop-teal); }
+        .st-key-brand-header { display: flex; justify-content: center; margin: 0 auto .75rem; }
+        .st-key-brand-header [data-testid='stImage'] { display: flex; justify-content: center; }
+        .st-key-brand-header img { max-width: 100%; height: auto; mix-blend-mode: multiply; }
         .bookloop-card { background: rgba(255,255,255,.88); border: 1px solid var(--bookloop-line); border-radius: 14px; padding: .85rem; height: 100%; box-shadow: 0 8px 24px rgba(16,28,59,.05); }
         div[class*='st-key-category_'] button {
             min-height: 5rem; border: 1px solid var(--bookloop-line); border-radius: 14px;
@@ -211,7 +214,7 @@ def main() -> None:
         .bookloop-listing-copy h3 { margin: 0 0 .45rem; color: var(--bookloop-ink); }
         .bookloop-listing-copy p { margin: 0 0 .65rem; color: #425467; }
         .bookloop-listing-copy strong { color: var(--bookloop-ink); }
-        .bookloop-pill { display: inline-block; color: var(--bookloop-teal); background: #e4f5f3; border-radius: 999px; padding: .25rem .65rem; font-size: .72rem; font-weight: 700; }
+        .bookloop-pill { display: inline-block; color: var(--bookloop-teal); background: var(--bookloop-soft-green); border-radius: 999px; padding: .25rem .65rem; font-size: .72rem; font-weight: 700; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -254,7 +257,8 @@ def main() -> None:
     _, logo_center, _ = st.columns([1, 4.5, 1])
     with logo_center:
         if os.path.exists(logo_path):
-            st.image(logo_path, width="stretch")
+            with st.container(key="brand-header", horizontal_alignment="center"):
+                st.image(logo_path, width=560)
         else:
             st.markdown(
                 '<div class="bookloop-brand">'
